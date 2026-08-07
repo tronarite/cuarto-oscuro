@@ -13,20 +13,20 @@ import {
 
 export interface UploadFormState {
   error?: string;
-  uploaded?: number;
 }
 
-export async function uploadPhotos(
+// Sube una foto por llamada (el cliente itera secuencialmente sobre los
+// archivos seleccionados). Mandar todas las fotos en una sola petición
+// obliga a un límite de tamaño de cuerpo arbitrario que cualquier lote
+// grande puede volver a superar; una foto por petición lo evita del todo.
+export async function uploadPhoto(
   galleryId: string,
   _prevState: UploadFormState | undefined,
   formData: FormData,
 ): Promise<UploadFormState> {
-  const files = formData
-    .getAll("photos")
-    .filter((f): f is File => f instanceof File && f.size > 0);
-
-  if (files.length === 0) {
-    return { error: "Selecciona al menos una foto." };
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "No se ha recibido ninguna foto." };
   }
 
   const lastPhoto = await prisma.photo.findFirst({
@@ -34,58 +34,52 @@ export async function uploadPhotos(
     orderBy: { order: "desc" },
     select: { order: true },
   });
-  let nextOrder = (lastPhoto?.order ?? -1) + 1;
+  const nextOrder = (lastPhoto?.order ?? -1) + 1;
 
-  let uploaded = 0;
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-    const exif = await extractExif(buffer).catch(() => ({}) as ExtractedExif);
-    const displayBuffer = await generateDisplayImage(buffer);
-    const thumbBuffer = await generateThumbImage(buffer);
+  const exif = await extractExif(buffer).catch(() => ({}) as ExtractedExif);
+  const displayBuffer = await generateDisplayImage(buffer);
+  const thumbBuffer = await generateThumbImage(buffer);
 
-    const photo = await prisma.photo.create({
-      data: {
-        galleryId,
-        order: nextOrder++,
-        originalPath: "",
-        displayPath: "",
-        thumbPath: "",
-        cameraMake: exif.cameraMake,
-        cameraModel: exif.cameraModel,
-        lens: exif.lens,
-        iso: exif.iso,
-        aperture: exif.aperture,
-        shutterSpeed: exif.shutterSpeed,
-        focalLength: exif.focalLength,
-        latitude: exif.latitude,
-        longitude: exif.longitude,
-        takenAt: exif.takenAt,
-      },
-    });
+  const photo = await prisma.photo.create({
+    data: {
+      galleryId,
+      order: nextOrder,
+      originalPath: "",
+      displayPath: "",
+      thumbPath: "",
+      cameraMake: exif.cameraMake,
+      cameraModel: exif.cameraModel,
+      lens: exif.lens,
+      iso: exif.iso,
+      aperture: exif.aperture,
+      shutterSpeed: exif.shutterSpeed,
+      focalLength: exif.focalLength,
+      latitude: exif.latitude,
+      longitude: exif.longitude,
+      takenAt: exif.takenAt,
+    },
+  });
 
-    const ext = path.extname(file.name) || ".jpg";
-    const paths = photoPaths(galleryId, photo.id, ext);
+  const ext = path.extname(file.name) || ".jpg";
+  const paths = photoPaths(galleryId, photo.id, ext);
 
-    await writeUploadFile(paths.originalAbs, buffer);
-    await writeUploadFile(paths.displayAbs, displayBuffer);
-    await writeUploadFile(paths.thumbAbs, thumbBuffer);
+  await writeUploadFile(paths.originalAbs, buffer);
+  await writeUploadFile(paths.displayAbs, displayBuffer);
+  await writeUploadFile(paths.thumbAbs, thumbBuffer);
 
-    await prisma.photo.update({
-      where: { id: photo.id },
-      data: {
-        originalPath: paths.originalRel,
-        displayPath: paths.displayRel,
-        thumbPath: paths.thumbRel,
-      },
-    });
-
-    uploaded++;
-  }
+  await prisma.photo.update({
+    where: { id: photo.id },
+    data: {
+      originalPath: paths.originalRel,
+      displayPath: paths.displayRel,
+      thumbPath: paths.thumbRel,
+    },
+  });
 
   revalidatePath(`/admin/galleries/${galleryId}`);
-  return { uploaded };
+  return {};
 }
 
 export async function updatePhotoDescription(

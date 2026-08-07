@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { GalleryForm } from "@/components/GalleryForm";
 import { updateGallery, deleteGallery } from "../actions";
 import {
-  uploadPhotos,
+  uploadPhoto,
   updatePhotoDescription,
   deletePhoto,
   reorderPhotos,
@@ -33,7 +33,7 @@ export default async function EditGalleryPage({
 
   const boundUpdate = updateGallery.bind(null, gallery.id);
   const boundDelete = deleteGallery.bind(null, gallery.id);
-  const boundUpload = uploadPhotos.bind(null, gallery.id);
+  const boundUpload = uploadPhoto.bind(null, gallery.id);
   const boundReorder = reorderPhotos.bind(null, gallery.id);
 
   return (
