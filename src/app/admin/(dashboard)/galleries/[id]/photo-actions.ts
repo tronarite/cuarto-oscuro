@@ -1,6 +1,7 @@
 "use server";
 
 import path from "node:path";
+import crypto from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { extractExif, type ExtractedExif } from "@/lib/exif";
@@ -13,6 +14,7 @@ import {
 
 export interface UploadFormState {
   error?: string;
+  skipped?: boolean;
 }
 
 // Sube una foto por llamada (el cliente itera secuencialmente sobre los
@@ -29,14 +31,23 @@ export async function uploadPhoto(
     return { error: "No se ha recibido ninguna foto." };
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const contentHash = crypto.createHash("sha256").update(buffer).digest("hex");
+
+  const existing = await prisma.photo.findUnique({
+    where: { galleryId_contentHash: { galleryId, contentHash } },
+    select: { id: true },
+  });
+  if (existing) {
+    return { skipped: true };
+  }
+
   const lastPhoto = await prisma.photo.findFirst({
     where: { galleryId },
     orderBy: { order: "desc" },
     select: { order: true },
   });
   const nextOrder = (lastPhoto?.order ?? -1) + 1;
-
-  const buffer = Buffer.from(await file.arrayBuffer());
 
   const exif = await extractExif(buffer).catch(() => ({}) as ExtractedExif);
   const displayBuffer = await generateDisplayImage(buffer);
@@ -46,6 +57,7 @@ export async function uploadPhoto(
     data: {
       galleryId,
       order: nextOrder,
+      contentHash,
       originalPath: "",
       displayPath: "",
       thumbPath: "",

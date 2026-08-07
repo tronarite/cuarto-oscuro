@@ -50,6 +50,10 @@ model Photo {
 
   description String?
 
+  // SHA-256 del archivo original: evita subir la misma foto dos veces a
+  // la misma galería.
+  contentHash String
+
   // EXIF
   cameraMake   String?
   cameraModel  String?
@@ -69,4 +73,5 @@ model Photo {
   updatedAt DateTime @updatedAt
 
   @@index([galleryId, order])
+  @@unique([galleryId, contentHash])
 }

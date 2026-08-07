@@ -17,6 +17,7 @@ export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
   );
   const [errors, setErrors] = useState<string[]>([]);
   const [doneCount, setDoneCount] = useState<number | null>(null);
+  const [skippedCount, setSkippedCount] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,6 +29,7 @@ export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
     setBusy(true);
     setDoneCount(null);
     const failedNames: string[] = [];
+    let skipped = 0;
     setErrors([]);
 
     for (let i = 0; i < files.length; i++) {
@@ -36,10 +38,12 @@ export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
       formData.set("photo", files[i]);
       const result = await action(undefined, formData);
       if (result.error) failedNames.push(`${files[i].name}: ${result.error}`);
+      else if (result.skipped) skipped++;
     }
 
     setProgress(null);
-    setDoneCount(files.length - failedNames.length);
+    setDoneCount(files.length - failedNames.length - skipped);
+    setSkippedCount(skipped);
     setErrors(failedNames);
     setBusy(false);
     formRef.current?.reset();
@@ -79,7 +83,11 @@ export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
         </ul>
       )}
       {doneCount !== null && errors.length === 0 && (
-        <p className="text-sm text-green-700">{doneCount} foto(s) subidas.</p>
+        <p className="text-sm text-green-700">
+          {doneCount} foto(s) subidas.
+          {skippedCount > 0 &&
+            ` ${skippedCount} ya existían en esta galería y se omitieron.`}
+        </p>
       )}
     </form>
   );
