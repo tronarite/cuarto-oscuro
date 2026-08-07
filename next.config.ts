@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       // en una sola petición pueden superar fácilmente el límite por defecto (1 MB).
       bodySizeLimit: "100mb",
     },
+    // El proxy (antes "middleware") trunca por su cuenta el cuerpo a 10 MB
+    // antes de que llegue a la Server Action, aunque bodySizeLimit sea mayor.
+    proxyClientMaxBodySize: "100mb",
   },
 };
 
