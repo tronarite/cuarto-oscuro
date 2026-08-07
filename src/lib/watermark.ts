@@ -24,11 +24,17 @@ function watermarkSvg(width: number, height: number, text: string): Buffer {
   `);
 }
 
+export interface WatermarkedImage {
+  buffer: Buffer;
+  width: number;
+  height: number;
+}
+
 async function toWatermarkedWebp(
   input: Buffer,
   maxEdge: number,
   quality: number,
-): Promise<Buffer> {
+): Promise<WatermarkedImage> {
   // Redimensiona primero y vuelve a leer los metadatos del resultado: la
   // orientación EXIF puede intercambiar ancho/alto, así que no se pueden
   // calcular las dimensiones finales de antemano a partir del original.
@@ -48,16 +54,22 @@ async function toWatermarkedWebp(
 
   const watermarkText = process.env.WATERMARK_TEXT || "© Galería fotográfica";
 
-  return sharp(resizedBuffer)
+  const buffer = await sharp(resizedBuffer)
     .composite([{ input: watermarkSvg(w, h, watermarkText), blend: "over" }])
     .webp({ quality })
     .toBuffer();
+
+  return { buffer, width: w, height: h };
 }
 
-export async function generateDisplayImage(input: Buffer): Promise<Buffer> {
+export async function generateDisplayImage(
+  input: Buffer,
+): Promise<WatermarkedImage> {
   return toWatermarkedWebp(input, DISPLAY_MAX_EDGE, 82);
 }
 
-export async function generateThumbImage(input: Buffer): Promise<Buffer> {
+export async function generateThumbImage(
+  input: Buffer,
+): Promise<WatermarkedImage> {
   return toWatermarkedWebp(input, THUMB_MAX_EDGE, 72);
 }

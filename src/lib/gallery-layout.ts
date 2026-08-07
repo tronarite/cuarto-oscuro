@@ -1,24 +1,17 @@
-export type GalleryTemplate = "few" | "medium" | "many";
-
-export function pickTemplate(photoCount: number): GalleryTemplate {
-  if (photoCount <= 6) return "few";
-  if (photoCount <= 24) return "medium";
-  return "many";
+export interface Groupable {
+  groupIndex: number;
+  order: number;
 }
 
-const ROOM_SIZE: Record<GalleryTemplate, number> = {
-  few: Infinity, // una sola sala, sin dividir
-  medium: 6,
-  many: 10,
-};
-
-export function chunkIntoRooms<T>(items: T[], template: GalleryTemplate): T[][] {
-  const size = ROOM_SIZE[template];
-  if (!isFinite(size)) return items.length ? [items] : [];
-
-  const rooms: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    rooms.push(items.slice(i, i + size));
+// Agrupa fotos por el grupo visual asignado (al subir, o reorganizado a
+// mano arrastrando en el panel de admin), ordenadas dentro de cada grupo.
+export function groupByRoom<T extends Groupable>(photos: T[]): T[][] {
+  const groups = new Map<number, T[]>();
+  for (const photo of photos) {
+    const list = groups.get(photo.groupIndex) ?? [];
+    list.push(photo);
+    groups.set(photo.groupIndex, list);
   }
-  return rooms;
+  for (const list of groups.values()) list.sort((a, b) => a.order - b.order);
+  return [...groups.entries()].sort((a, b) => a[0] - b[0]).map(([, list]) => list);
 }

@@ -6,8 +6,9 @@ import { updateGallery, deleteGallery } from "../actions";
 import {
   uploadPhoto,
   updatePhotoDescription,
+  toggleFeatured,
   deletePhoto,
-  reorderPhotos,
+  movePhoto,
 } from "./photo-actions";
 import { PhotoUploadForm } from "@/components/PhotoUploadForm";
 import { PhotoManagerList } from "@/components/PhotoManagerList";
@@ -26,7 +27,9 @@ export default async function EditGalleryPage({
 
   const gallery = await prisma.gallery.findUnique({
     where: { id },
-    include: { photos: { orderBy: { order: "asc" } } },
+    include: {
+      photos: { orderBy: [{ groupIndex: "asc" }, { order: "asc" }] },
+    },
   });
 
   if (!gallery) notFound();
@@ -34,7 +37,7 @@ export default async function EditGalleryPage({
   const boundUpdate = updateGallery.bind(null, gallery.id);
   const boundDelete = deleteGallery.bind(null, gallery.id);
   const boundUpload = uploadPhoto.bind(null, gallery.id);
-  const boundReorder = reorderPhotos.bind(null, gallery.id);
+  const boundMove = movePhoto.bind(null, gallery.id);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -78,7 +81,8 @@ export default async function EditGalleryPage({
         <div className="mt-6">
           <PhotoManagerList
             photos={gallery.photos}
-            onReorder={boundReorder}
+            onMove={boundMove}
+            onToggleFeatured={toggleFeatured}
             onUpdateDescription={updatePhotoDescription}
             onDelete={deletePhoto}
           />

@@ -2,10 +2,16 @@
 
 import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { pickTemplate, chunkIntoRooms } from "@/lib/gallery-layout";
+import { groupByRoom } from "@/lib/gallery-layout";
+import { MasonryGrid } from "@/components/MasonryGrid";
 
 export interface GalleryPhoto {
   id: string;
+  groupIndex: number;
+  order: number;
+  featured: boolean;
+  width: number | null;
+  height: number | null;
   description: string | null;
   cameraMake: string | null;
   cameraModel: string | null;
@@ -30,21 +36,13 @@ function exifLine(photo: GalleryPhoto): string[] {
   return parts;
 }
 
-const GRID_CLASS: Record<string, string> = {
-  few: "grid-cols-1 gap-8 sm:grid-cols-2",
-  medium: "grid-cols-2 gap-5 sm:grid-cols-3",
-  many: "grid-cols-3 gap-3 sm:grid-cols-4",
-};
-
 function Room({
   photos,
-  template,
   roomIndex,
   totalRooms,
   onOpen,
 }: {
   photos: GalleryPhoto[];
-  template: string;
   roomIndex: number;
   totalRooms: number;
   onOpen: (id: string) => void;
@@ -59,8 +57,8 @@ function Room({
   return (
     <motion.section
       ref={ref}
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ y: 28 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
       className="py-10"
@@ -73,31 +71,25 @@ function Room({
           Sala {roomIndex + 1} de {totalRooms}
         </motion.p>
       )}
-      <div className={`grid ${GRID_CLASS[template]}`}>
-        {photos.map((photo, i) => {
-          const featured =
-            template === "medium" && i === 0 && photos.length > 1;
-          return (
-            <button
-              key={photo.id}
-              type="button"
-              onClick={() => onOpen(photo.id)}
-              className={`group aspect-square overflow-hidden rounded-md bg-surface ${
-                featured ? "col-span-2 row-span-2 sm:col-span-2" : ""
-              }`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/api/img/thumb/${photo.id}`}
-                alt={photo.description ?? ""}
-                draggable={false}
-                onContextMenu={(e) => e.preventDefault()}
-                className="h-full w-full select-none object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </button>
-          );
-        })}
-      </div>
+      <MasonryGrid
+        items={photos}
+        renderItem={(photo) => (
+          <button
+            type="button"
+            onClick={() => onOpen(photo.id)}
+            className="group h-full w-full overflow-hidden rounded-md bg-surface"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/img/thumb/${photo.id}`}
+              alt={photo.description ?? ""}
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              className="h-full w-full select-none object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </button>
+        )}
+      />
     </motion.section>
   );
 }
@@ -106,19 +98,15 @@ export function GalleryView({ photos }: { photos: GalleryPhoto[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
 
-  const template = pickTemplate(photos.length);
-  const rooms = chunkIntoRooms(photos, template);
-  const containerClass =
-    template === "few" ? "mx-auto max-w-3xl" : "mx-auto max-w-5xl";
+  const rooms = groupByRoom(photos);
 
   return (
     <>
-      <div className={containerClass}>
+      <div className="mx-auto max-w-5xl">
         {rooms.map((roomPhotos, i) => (
           <Room
-            key={i}
+            key={roomPhotos[0]?.id ?? i}
             photos={roomPhotos}
-            template={template}
             roomIndex={i}
             totalRooms={rooms.length}
             onOpen={setOpenId}

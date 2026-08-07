@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasGalleryUnlock } from "@/lib/gallery-access";
-import { pickTemplate, chunkIntoRooms } from "@/lib/gallery-layout";
+import { groupByRoom } from "@/lib/gallery-layout";
 import { PasswordGate } from "@/components/PasswordGate";
 import { GalleryView } from "@/components/GalleryView";
 import { TripMapLoader } from "@/components/TripMapLoader";
@@ -19,7 +19,9 @@ export default async function GalleryPage({
 
   const gallery = await prisma.gallery.findUnique({
     where: { slug },
-    include: { photos: { orderBy: { order: "asc" } } },
+    include: {
+      photos: { orderBy: [{ groupIndex: "asc" }, { order: "asc" }] },
+    },
   });
 
   if (!gallery) notFound();
@@ -45,8 +47,7 @@ export default async function GalleryPage({
     .filter((p) => p.latitude != null && p.longitude != null)
     .map((p) => ({ id: p.id, lat: p.latitude as number, lng: p.longitude as number }));
 
-  const template = pickTemplate(gallery.photos.length);
-  const roomCount = chunkIntoRooms(gallery.photos, template).length || 1;
+  const roomCount = groupByRoom(gallery.photos).length || 1;
 
   return (
     <main className="relative px-6 py-16">

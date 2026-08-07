@@ -40,13 +40,23 @@ model Photo {
   id       String @id @default(cuid())
   gallery  Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
   galleryId String
-  order    Int
+
+  // Sala/grupo visual dentro de la galería y posición dentro de ese grupo
+  // (no un orden global). El admin puede arrastrar fotos entre grupos.
+  groupIndex Int     @default(0)
+  order      Int
+  featured   Boolean @default(false)
 
   // Rutas a los archivos procesados (con watermark, varias resoluciones).
   // El original sin marca se guarda aparte y nunca se expone vía app.
   originalPath String
   displayPath  String
   thumbPath    String?
+
+  // Dimensiones de la imagen procesada (ya orientada según EXIF), para
+  // poder maquetar en mosaico respetando la proporción real de cada foto.
+  width  Int?
+  height Int?
 
   description String?
 
@@ -72,6 +82,6 @@ model Photo {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([galleryId, order])
+  @@index([galleryId, groupIndex, order])
   @@unique([galleryId, contentHash])
 }
