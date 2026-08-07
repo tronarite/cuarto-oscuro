@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f1ec;
+  --foreground: #262420;
+  --muted-foreground: #78756d;
+  --border: #ddd9d0;
+  --surface: #e5e2da;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #171613;
+    --foreground: #e9e6de;
+    --muted-foreground: #9a968c;
+    --border: #38352f;
+    --surface: #232019;
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #171613;
+  --foreground: #e9e6de;
+  --muted-foreground: #9a968c;
+  --border: #38352f;
+  --surface: #232019;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Capas de textura ambiental — periodos deliberadamente distintos y no
+   redondos entre sí para que las capas no se sientan sincronizadas. */
+
+.ambient-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  opacity: 0.045;
+  animation: grain-drift 19s steps(6) infinite;
+}
+
+@keyframes grain-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 180px 220px; }
+}
+
+@keyframes blob-drift-a {
+  0%, 100% { transform: translate(-6%, -4%) scale(1); }
+  33% { transform: translate(4%, 6%) scale(1.08); }
+  66% { transform: translate(-2%, 8%) scale(0.96); }
+}
+
+@keyframes blob-drift-b {
+  0%, 100% { transform: translate(5%, 3%) scale(1); }
+  40% { transform: translate(-6%, -5%) scale(1.05); }
+  75% { transform: translate(3%, -7%) scale(0.94); }
+}
+
+.ambient-blob-a {
+  animation: blob-drift-a 47s ease-in-out infinite;
+}
+
+.ambient-blob-b {
+  animation: blob-drift-b 63s ease-in-out infinite;
+}
+
+@keyframes light-sweep {
+  0%, 70%, 100% { transform: translateY(-30vh); opacity: 0; }
+  82% { opacity: 1; }
+  92% { transform: translateY(120vh); opacity: 0; }
+}
+
+.ambient-light {
+  animation: light-sweep 34s linear infinite;
+}

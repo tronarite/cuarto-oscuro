@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Privacy {
+  PUBLIC
+  UNLISTED
+  PASSWORD
+}
+
+model Gallery {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String?
+  tripStart   DateTime?
+  tripEnd     DateTime?
+
+  privacy      Privacy @default(PUBLIC)
+  passwordHash String?
+
+  visitCount Int @default(0)
+
+  photos    Photo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Photo {
+  id       String @id @default(cuid())
+  gallery  Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  galleryId String
+  order    Int
+
+  // Rutas a los archivos procesados (con watermark, varias resoluciones).
+  // El original sin marca se guarda aparte y nunca se expone vía app.
+  originalPath String
+  displayPath  String
+  thumbPath    String?
+
+  description String?
+
+  // EXIF
+  cameraMake   String?
+  cameraModel  String?
+  lens         String?
+  iso          Int?
+  aperture     Float?
+  shutterSpeed String?
+  focalLength  Float?
+
+  // GPS
+  latitude  Float?
+  longitude Float?
+
+  takenAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([galleryId, order])
+}
