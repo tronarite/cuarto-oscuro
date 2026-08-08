@@ -40,53 +40,59 @@ export default async function EditGalleryPage({
   const boundReorder = reorderPhoto.bind(null, gallery.id);
 
   return (
-    <main className="py-12">
-      <div className="mx-auto max-w-3xl px-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-medium">{gallery.title}</h1>
-          <Link
-            href={`/galeria/${gallery.slug}`}
-            target="_blank"
-            className="text-sm text-neutral-500 underline"
-          >
-            Ver galería pública →
-          </Link>
-        </div>
-        <p className="mt-1 text-sm text-neutral-500">
+    <div className="flex flex-col lg:flex-row">
+      <aside className="shrink-0 border-border px-6 py-8 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:w-80 lg:overflow-y-auto lg:border-r lg:px-6">
+        <Link
+          href={`/galeria/${gallery.slug}`}
+          target="_blank"
+          className="text-xs text-neutral-500 underline"
+        >
+          Ver galería pública →
+        </Link>
+        <h1 className="mt-1 text-xl font-medium">{gallery.title}</h1>
+        <p className="mt-0.5 text-xs text-neutral-500">
           /{gallery.slug} · {gallery.visitCount} visitas
         </p>
 
-        <section className="mt-10">
-          <h2 className="text-lg font-medium">Datos de la galería</h2>
-          <div className="mt-4">
-            <GalleryForm
-              action={boundUpdate}
-              submitLabel="Guardar cambios"
-              defaultValues={{
-                title: gallery.title,
-                description: gallery.description ?? undefined,
-                privacy: gallery.privacy,
-                tripStart: toDateInputValue(gallery.tripStart),
-                tripEnd: toDateInputValue(gallery.tripEnd),
-                hasPassword: Boolean(gallery.passwordHash),
-              }}
-            />
-          </div>
+        <section className="mt-6">
+          <GalleryForm
+            action={boundUpdate}
+            submitLabel="Guardar cambios"
+            defaultValues={{
+              title: gallery.title,
+              description: gallery.description ?? undefined,
+              privacy: gallery.privacy,
+              tripStart: toDateInputValue(gallery.tripStart),
+              tripEnd: toDateInputValue(gallery.tripEnd),
+              hasPassword: Boolean(gallery.passwordHash),
+            }}
+          />
         </section>
 
-        <section className="mt-12">
-          <h2 className="text-lg font-medium">Fotos</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Así se verán en la galería pública: arrastra para reordenar,
-            marca destacadas y escribe el pie de foto directamente encima.
-          </p>
-          <div className="mt-4">
+        <section className="mt-6">
+          <h2 className="text-sm font-medium">Subir fotos</h2>
+          <div className="mt-2">
             <PhotoUploadForm action={boundUpload} />
           </div>
         </section>
-      </div>
 
-      <div className="mx-auto mt-6 max-w-5xl px-6">
+        <section className="mt-8 border-t border-neutral-200 pt-4">
+          <h2 className="text-sm font-medium text-red-700">Zona peligrosa</h2>
+          <form action={boundDelete} className="mt-2">
+            <button
+              type="submit"
+              className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-700 hover:bg-red-50"
+            >
+              Eliminar galería
+            </button>
+          </form>
+        </section>
+      </aside>
+
+      <div className="flex-1 px-6 py-8">
+        <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
+          Vista previa — así se ve en la galería pública
+        </p>
         <PhotoManagerList
           photos={gallery.photos}
           onReorder={boundReorder}
@@ -95,20 +101,6 @@ export default async function EditGalleryPage({
           onDelete={deletePhoto}
         />
       </div>
-
-      <div className="mx-auto max-w-3xl px-6">
-        <section className="mt-12 border-t border-neutral-200 pt-6">
-          <h2 className="text-lg font-medium text-red-700">Zona peligrosa</h2>
-          <form action={boundDelete} className="mt-3">
-            <button
-              type="submit"
-              className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-            >
-              Eliminar galería
-            </button>
-          </form>
-        </section>
-      </div>
-    </main>
+    </div>
   );
 }

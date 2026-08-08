@@ -5,26 +5,27 @@ export interface RailPhoto {
   gallerySlug: string;
   width: number | null;
   height: number | null;
+  big: boolean;
 }
 
 export function FeaturedRail({
   photos,
-  direction,
   className = "",
 }: {
   photos: RailPhoto[];
-  direction: "up" | "down";
   className?: string;
 }) {
   if (photos.length === 0) return null;
 
-  const animationClass = direction === "up" ? "animate-rail-up" : "animate-rail-down";
-
   return (
     <div className={`pointer-events-none overflow-hidden ${className}`}>
-      <div className={`flex flex-col gap-4 ${animationClass}`}>
+      <div className="animate-rail-up flex flex-col items-center gap-6">
         {[0, 1].map((copy) => (
-          <div key={copy} className="flex flex-col gap-4" aria-hidden={copy === 1}>
+          <div
+            key={copy}
+            className="flex flex-col items-center gap-6"
+            aria-hidden={copy === 1}
+          >
             {photos.map((photo) => (
               <Link
                 key={`${copy}-${photo.id}`}
@@ -33,9 +34,10 @@ export function FeaturedRail({
                   aspectRatio:
                     photo.width && photo.height
                       ? `${photo.width} / ${photo.height}`
-                      : "3 / 4",
+                      : "4 / 3",
+                  width: photo.big ? "100%" : "72%",
                 }}
-                className="pointer-events-auto block w-full overflow-hidden rounded-xl bg-surface"
+                className="pointer-events-auto block shrink-0 overflow-hidden rounded-2xl bg-surface shadow-sm"
                 tabIndex={copy === 1 ? -1 : undefined}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

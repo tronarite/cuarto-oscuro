@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export type FeatureLevel = "NONE" | "SECONDARY" | "PRIMARY";
 
@@ -12,7 +12,6 @@ export interface MasonryItem {
 }
 
 const GAP = 12;
-const ROW_UNIT = 8;
 
 // Principal ocupa lo mismo de ancho que secundaria, pero se renderiza más
 // alta (llama más la atención); sin etiqueta siempre va a una columna.
@@ -28,6 +27,58 @@ function columnsForWidth(width: number): number {
   return 4;
 }
 
+interface Placement {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// Empaquetado tipo "columna más corta" (Pinterest), calculado en JS y
+// aplicado con posicionamiento absoluto: a diferencia de CSS grid con
+// `dense`, procesa las fotos EN ORDEN y nunca las reordena para rellenar
+// huecos, así el resultado es 100% predecible a partir del propio orden
+// (mismo orden + mismo ancho de contenedor = mismo resultado siempre, en
+// el admin y en la galería pública).
+function computeLayout<T extends MasonryItem>(
+  items: T[],
+  columns: number,
+  containerWidth: number,
+): { placements: Placement[]; containerHeight: number } {
+  const columnWidth = (containerWidth - (columns - 1) * GAP) / columns;
+  const columnHeights = new Array(columns).fill(0);
+  const placements: Placement[] = [];
+
+  for (const item of items) {
+    const { span: configSpan, heightMultiplier } = SIZE_CONFIG[item.featureLevel];
+    const span = Math.min(configSpan, columns);
+    const aspectRatio = item.width && item.height ? item.width / item.height : 1;
+    const width = columnWidth * span + GAP * (span - 1);
+    const height = (width / aspectRatio) * heightMultiplier;
+
+    let bestCol = 0;
+    let bestY = Infinity;
+    for (let c = 0; c <= columns - span; c++) {
+      let y = 0;
+      for (let k = c; k < c + span; k++) y = Math.max(y, columnHeights[k]);
+      if (y < bestY) {
+        bestY = y;
+        bestCol = c;
+      }
+    }
+
+    const x = bestCol * (columnWidth + GAP);
+    placements.push({ id: item.id, x, y: bestY, width, height });
+
+    const newHeight = bestY + height + GAP;
+    for (let k = bestCol; k < bestCol + span; k++) columnHeights[k] = newHeight;
+  }
+
+  const containerHeight = Math.max(0, ...columnHeights) - GAP;
+  return { placements, containerHeight };
+}
+
 export function MasonryGrid<T extends MasonryItem>({
   items,
   renderItem,
@@ -40,9 +91,10 @@ export function MasonryGrid<T extends MasonryItem>({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    setContainerWidth(el.getBoundingClientRect().width);
     const observer = new ResizeObserver((entries) => {
       setContainerWidth(entries[0].contentRect.width);
     });
@@ -51,43 +103,33 @@ export function MasonryGrid<T extends MasonryItem>({
   }, []);
 
   const columns = containerWidth > 0 ? columnsForWidth(containerWidth) : 3;
-  const columnWidth =
-    containerWidth > 0 ? (containerWidth - (columns - 1) * GAP) / columns : 0;
+  const { placements, containerHeight } =
+    containerWidth > 0
+      ? computeLayout(items, columns, containerWidth)
+      : { placements: [], containerHeight: 0 };
+
+  const byId = new Map(items.map((item) => [item.id, item]));
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{
-        display: "grid",
-        gridAutoFlow: "dense",
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gridAutoRows: `${ROW_UNIT}px`,
-        gap: GAP,
-      }}
+      style={{ position: "relative", height: containerHeight }}
     >
-      {items.map((item) => {
-        const { span: configSpan, heightMultiplier } = SIZE_CONFIG[item.featureLevel];
-        const span = columns > 1 ? Math.min(configSpan, columns) : 1;
-        const aspectRatio =
-          item.width && item.height ? item.width / item.height : 1;
-
-        let rowSpan = 20;
-        if (columnWidth > 0) {
-          const renderedWidth = columnWidth * span + GAP * (span - 1);
-          const renderedHeight = (renderedWidth / aspectRatio) * heightMultiplier;
-          rowSpan = Math.max(
-            1,
-            Math.round((renderedHeight + GAP) / (ROW_UNIT + GAP)),
-          );
-        }
-
+      {placements.map((p) => {
+        const item = byId.get(p.id);
+        if (!item) return null;
         return (
           <div
-            key={item.id}
+            key={p.id}
             style={{
-              gridColumn: `span ${span}`,
-              gridRow: `span ${rowSpan}`,
+              position: "absolute",
+              left: p.x,
+              top: p.y,
+              width: p.width,
+              height: p.height,
+              transition:
+                "left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease",
             }}
           >
             {renderItem(item)}

@@ -100,22 +100,13 @@ body {
   animation: light-sweep 34s linear infinite;
 }
 
-/* Raíles de fotos destacadas principales en la portada. */
+/* Raíl de fotos destacadas en la portada. */
 
 @keyframes rail-up {
   from { transform: translateY(0); }
   to { transform: translateY(-50%); }
 }
 
-@keyframes rail-down {
-  from { transform: translateY(-50%); }
-  to { transform: translateY(0); }
-}
-
 .animate-rail-up {
-  animation: rail-up 80s linear infinite;
-}
-
-.animate-rail-down {
-  animation: rail-down 80s linear infinite;
+  animation: rail-up 42s linear infinite;
 }
