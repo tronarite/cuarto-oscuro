@@ -35,7 +35,7 @@ export default async function AdminPage() {
             href={`/admin/galleries/${gallery.id}`}
             className="group block overflow-hidden rounded-2xl border border-neutral-200 transition-all active:scale-[0.98]"
           >
-            <div className="aspect-[4/3] w-full overflow-hidden bg-neutral-100">
+            <div className="aspect-[4/3] w-full overflow-hidden bg-surface">
               {gallery.photos[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -44,7 +44,7 @@ export default async function AdminPage() {
                   className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-neutral-400">
+                <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                   Sin fotos
                 </div>
               )}
