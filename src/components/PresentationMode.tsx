@@ -76,37 +76,9 @@ export function PresentationMode({
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black"
+      className="fixed inset-0 z-[60] flex flex-col bg-black"
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={photo.id}
-          initial={{ opacity: 0, scale: 1.02 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="flex h-full w-full flex-col items-center justify-center gap-4 p-8"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/api/img/display/${photo.id}`}
-            alt={photo.description ?? ""}
-            draggable={false}
-            onContextMenu={(e) => e.preventDefault()}
-            className="max-h-[85vh] max-w-full select-none object-contain"
-          />
-          {(photo.description || specs.length > 0) && (
-            <div className="text-center text-neutral-300">
-              {photo.description && <p className="text-sm">{photo.description}</p>}
-              {specs.length > 0 && (
-                <p className="mt-1 text-xs text-neutral-500">{specs.join(" · ")}</p>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5">
+      <div className="flex shrink-0 items-center justify-between p-5">
         <span className="text-xs text-neutral-500">
           {index + 1} / {photos.length}
         </span>
@@ -119,7 +91,37 @@ export function PresentationMode({
         </button>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-6 p-6">
+      <div className="relative min-h-0 flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={photo.id}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-hidden px-8"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/img/display/${photo.id}`}
+              alt={photo.description ?? ""}
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              className="max-h-[75%] max-w-full select-none object-contain"
+            />
+            {(photo.description || specs.length > 0) && (
+              <div className="max-w-2xl text-center text-neutral-300">
+                {photo.description && <p className="text-sm">{photo.description}</p>}
+                {specs.length > 0 && (
+                  <p className="mt-1 text-xs text-neutral-500">{specs.join(" · ")}</p>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="flex shrink-0 items-center justify-center gap-6 p-6">
         <button
           type="button"
           onClick={prev}
