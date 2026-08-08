@@ -16,7 +16,7 @@ export function PasswordGate({ title, action }: PasswordGateProps) {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="text-xl font-medium">{title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Esta galería está protegida con contraseña.
       </p>
@@ -27,13 +27,13 @@ export function PasswordGate({ title, action }: PasswordGateProps) {
           placeholder="Contraseña"
           autoFocus
           required
-          className="rounded-md border border-border bg-transparent px-3 py-2 text-foreground outline-none focus:border-muted-foreground"
+          className="rounded-full border border-border bg-transparent px-4 py-2.5 text-foreground outline-none transition-colors duration-300 focus:border-muted-foreground"
         />
         {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background disabled:opacity-50"
+          className="rounded-full bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity duration-300 hover:opacity-90 disabled:opacity-50"
         >
           {pending ? "Comprobando…" : "Entrar"}
         </button>

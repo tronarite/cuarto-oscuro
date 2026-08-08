@@ -1,15 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { groupByRoom } from "@/lib/gallery-layout";
-import { MasonryGrid } from "@/components/MasonryGrid";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { MasonryGrid, type FeatureLevel } from "@/components/MasonryGrid";
 
 export interface GalleryPhoto {
   id: string;
-  groupIndex: number;
   order: number;
-  featured: boolean;
+  featureLevel: FeatureLevel;
   width: number | null;
   height: number | null;
   description: string | null;
@@ -22,11 +20,20 @@ export interface GalleryPhoto {
   focalLength: number | null;
 }
 
+function cameraLabel(make: string | null, model: string | null): string {
+  if (make && model) {
+    // Muchas cámaras ya incluyen la marca dentro del modelo del EXIF
+    // (ej. modelo "Canon EOS 600D" con marca "Canon"): evita duplicarla.
+    return model.toLowerCase().startsWith(make.toLowerCase())
+      ? model
+      : `${make} ${model}`;
+  }
+  return make || model || "";
+}
+
 function exifLine(photo: GalleryPhoto): string[] {
   const parts: string[] = [];
-  const camera = [photo.cameraMake, photo.cameraModel]
-    .filter(Boolean)
-    .join(" ");
+  const camera = cameraLabel(photo.cameraMake, photo.cameraModel);
   if (camera) parts.push(camera);
   if (photo.lens) parts.push(photo.lens);
   if (photo.focalLength) parts.push(`${photo.focalLength}mm`);
@@ -36,82 +43,62 @@ function exifLine(photo: GalleryPhoto): string[] {
   return parts;
 }
 
-function Room({
-  photos,
-  roomIndex,
-  totalRooms,
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+function Tile({
+  photo,
   onOpen,
 }: {
-  photos: GalleryPhoto[];
-  roomIndex: number;
-  totalRooms: number;
+  photo: GalleryPhoto;
   onOpen: (id: string) => void;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  const dividerY = useTransform(scrollYProgress, [0, 1], [24, -24]);
+  const specs = exifLine(photo);
+  const hasCaption = Boolean(photo.description) || specs.length > 0;
 
   return (
-    <motion.section
-      ref={ref}
-      initial={{ y: 28 }}
+    <motion.button
+      type="button"
+      onClick={() => onOpen(photo.id)}
+      initial={{ y: 18 }}
       whileInView={{ y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-      className="py-10"
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.5, ease: EASE }}
+      className="group relative block h-full w-full overflow-hidden rounded-xl bg-surface"
     >
-      {totalRooms > 1 && (
-        <motion.p
-          style={{ y: dividerY }}
-          className="mb-6 text-xs uppercase tracking-widest text-muted-foreground"
-        >
-          Sala {roomIndex + 1} de {totalRooms}
-        </motion.p>
-      )}
-      <MasonryGrid
-        items={photos}
-        renderItem={(photo) => (
-          <button
-            type="button"
-            onClick={() => onOpen(photo.id)}
-            className="group h-full w-full overflow-hidden rounded-md bg-surface"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/thumb/${photo.id}`}
-              alt={photo.description ?? ""}
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              className="h-full w-full select-none object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          </button>
-        )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/api/img/thumb/${photo.id}`}
+        alt={photo.description ?? ""}
+        draggable={false}
+        onContextMenu={(e) => e.preventDefault()}
+        className="h-full w-full select-none object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
       />
-    </motion.section>
+      {hasCaption && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3 pt-10 text-left">
+          {photo.description && (
+            <p className="text-sm font-medium text-white">{photo.description}</p>
+          )}
+          {specs.length > 0 && (
+            <p className="mt-0.5 text-[11px] text-white/70">{specs.join(" · ")}</p>
+          )}
+        </div>
+      )}
+    </motion.button>
   );
 }
 
 export function GalleryView({ photos }: { photos: GalleryPhoto[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
-
-  const rooms = groupByRoom(photos);
+  const ordered = [...photos].sort((a, b) => a.order - b.order);
 
   return (
     <>
       <div className="mx-auto max-w-5xl">
-        {rooms.map((roomPhotos, i) => (
-          <Room
-            key={roomPhotos[0]?.id ?? i}
-            photos={roomPhotos}
-            roomIndex={i}
-            totalRooms={rooms.length}
-            onOpen={setOpenId}
-          />
-        ))}
+        <MasonryGrid
+          items={ordered}
+          renderItem={(photo) => <Tile photo={photo} onOpen={setOpenId} />}
+        />
       </div>
 
       {openPhoto && (

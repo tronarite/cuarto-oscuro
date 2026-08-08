@@ -36,10 +36,22 @@
   --surface: #232019;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
 }
 
 /* Capas de textura ambiental — periodos deliberadamente distintos y no
@@ -86,4 +98,24 @@ body {
 
 .ambient-light {
   animation: light-sweep 34s linear infinite;
+}
+
+/* Raíles de fotos destacadas principales en la portada. */
+
+@keyframes rail-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+@keyframes rail-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+
+.animate-rail-up {
+  animation: rail-up 80s linear infinite;
+}
+
+.animate-rail-down {
+  animation: rail-down 80s linear infinite;
 }

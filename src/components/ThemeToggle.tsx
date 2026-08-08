@@ -35,7 +35,7 @@ export function ThemeToggle() {
       aria-label={
         theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"
       }
-      className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 opacity-70 hover:opacity-100"
+      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground opacity-70 transition-all duration-300 ease-out hover:bg-surface hover:opacity-100"
     >
       {theme === "dark" ? "☀︎" : "☾"}
     </button>

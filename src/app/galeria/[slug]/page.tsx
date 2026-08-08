@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasGalleryUnlock } from "@/lib/gallery-access";
-import { groupByRoom } from "@/lib/gallery-layout";
 import { PasswordGate } from "@/components/PasswordGate";
 import { GalleryView } from "@/components/GalleryView";
 import { TripMapLoader } from "@/components/TripMapLoader";
@@ -20,7 +19,7 @@ export default async function GalleryPage({
   const gallery = await prisma.gallery.findUnique({
     where: { slug },
     include: {
-      photos: { orderBy: [{ groupIndex: "asc" }, { order: "asc" }] },
+      photos: { orderBy: { order: "asc" } },
     },
   });
 
@@ -47,27 +46,40 @@ export default async function GalleryPage({
     .filter((p) => p.latitude != null && p.longitude != null)
     .map((p) => ({ id: p.id, lat: p.latitude as number, lng: p.longitude as number }));
 
-  const roomCount = groupByRoom(gallery.photos).length || 1;
+  // Sin salas ya: usamos el número de fotos como pulso para el
+  // controlador de textura ambiental (cuánto "recorrido" tiene la página).
+  const roomCount = Math.max(1, Math.ceil(gallery.photos.length / 8));
 
   return (
-    <main className="relative px-6 py-16">
+    <main className="relative">
       <AmbientTexture roomCount={roomCount} />
-      <div className="mx-auto flex max-w-5xl items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-medium">{gallery.title}</h1>
-          {gallery.description && (
-            <p className="mt-2 text-muted-foreground">{gallery.description}</p>
-          )}
+
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <span className="text-sm font-semibold tracking-tight">
+            {gallery.title}
+          </span>
+          <ThemeToggle />
         </div>
-        <ThemeToggle />
+      </header>
+
+      <div className="mx-auto max-w-5xl px-6 pb-6 pt-16">
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+          {gallery.title}
+        </h1>
+        {gallery.description && (
+          <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
+            {gallery.description}
+          </p>
+        )}
       </div>
 
-      <div className="mt-4">
+      <div className="px-6 pb-24">
         <GalleryView photos={gallery.photos} />
       </div>
 
       {tripPoints.length > 0 && (
-        <div className="mx-auto mt-16 max-w-5xl">
+        <div className="mx-auto max-w-5xl px-6 pb-24 pt-16">
           <h2 className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
             Mapa del viaje
           </h2>

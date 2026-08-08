@@ -11,57 +11,23 @@ import {
   writeUploadFile,
   deleteFileIfExists,
 } from "@/lib/storage";
+import type { FeatureLevel } from "@/generated/prisma/enums";
 
 export interface UploadFormState {
   error?: string;
   skipped?: boolean;
 }
 
-const MIN_GROUP_SIZE = 3;
-const MAX_GROUP_SIZE = 6;
-const MAX_FEATURED_PER_GROUP = 2;
-const FEATURED_CHANCE = 0.2;
+const PRIMARY_CHANCE = 0.12;
+const SECONDARY_CHANCE = 0.22;
 
-// Decide en qué grupo cae la siguiente foto subida: sigue rellenando el
-// último grupo hasta un tamaño aleatorio (3-6, nunca más de 6), luego
-// empieza uno nuevo. Así los grupos no salen todos del mismo tamaño.
-async function pickGroupForNewPhoto(
-  galleryId: string,
-): Promise<{ groupIndex: number; order: number; featured: boolean }> {
-  const lastPhoto = await prisma.photo.findFirst({
-    where: { galleryId },
-    orderBy: [{ groupIndex: "desc" }, { order: "desc" }],
-    select: { groupIndex: true },
-  });
-
-  if (!lastPhoto) {
-    return { groupIndex: 0, order: 0, featured: false };
-  }
-
-  const currentGroupPhotos = await prisma.photo.findMany({
-    where: { galleryId, groupIndex: lastPhoto.groupIndex },
-    select: { featured: true },
-  });
-
-  const groupCap =
-    MIN_GROUP_SIZE +
-    Math.floor(Math.random() * (MAX_GROUP_SIZE - MIN_GROUP_SIZE + 1));
-
-  const groupIndex =
-    currentGroupPhotos.length >= groupCap
-      ? lastPhoto.groupIndex + 1
-      : lastPhoto.groupIndex;
-  const order =
-    groupIndex === lastPhoto.groupIndex ? currentGroupPhotos.length : 0;
-  const featuredSoFar =
-    groupIndex === lastPhoto.groupIndex
-      ? currentGroupPhotos.filter((p) => p.featured).length
-      : 0;
-
-  const featured =
-    featuredSoFar < MAX_FEATURED_PER_GROUP && Math.random() < FEATURED_CHANCE;
-
-  return { groupIndex, order, featured };
+// Reparte el nivel de destacado al azar (entremezclado, sin salas): la
+// mayoría sin etiquetar, algunas secundarias y unas pocas principales.
+function randomFeatureLevel(): FeatureLevel {
+  const roll = Math.random();
+  if (roll < PRIMARY_CHANCE) return "PRIMARY";
+  if (roll < PRIMARY_CHANCE + SECONDARY_CHANCE) return "SECONDARY";
+  return "NONE";
 }
 
 // Sube una foto por llamada (el cliente itera secuencialmente sobre los
@@ -89,7 +55,12 @@ export async function uploadPhoto(
     return { skipped: true };
   }
 
-  const { groupIndex, order, featured } = await pickGroupForNewPhoto(galleryId);
+  const lastPhoto = await prisma.photo.findFirst({
+    where: { galleryId },
+    orderBy: { order: "desc" },
+    select: { order: true },
+  });
+  const order = (lastPhoto?.order ?? -1) + 1;
 
   const exif = await extractExif(buffer).catch(() => ({}) as ExtractedExif);
   const display = await generateDisplayImage(buffer);
@@ -98,9 +69,8 @@ export async function uploadPhoto(
   const photo = await prisma.photo.create({
     data: {
       galleryId,
-      groupIndex,
       order,
-      featured,
+      featureLevel: randomFeatureLevel(),
       contentHash,
       width: display.width,
       height: display.height,
@@ -151,10 +121,10 @@ export async function updatePhotoDescription(
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
-export async function toggleFeatured(photoId: string, featured: boolean) {
+export async function setFeatureLevel(photoId: string, level: FeatureLevel) {
   const photo = await prisma.photo.update({
     where: { id: photoId },
-    data: { featured },
+    data: { featureLevel: level },
   });
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
@@ -172,9 +142,9 @@ export async function deletePhoto(photoId: string) {
 
   await prisma.photo.delete({ where: { id: photoId } });
 
-  // Cierra el hueco dejado en su grupo de origen.
+  // Cierra el hueco dejado en la secuencia.
   const siblings = await prisma.photo.findMany({
-    where: { galleryId: photo.galleryId, groupIndex: photo.groupIndex },
+    where: { galleryId: photo.galleryId },
     orderBy: { order: "asc" },
     select: { id: true },
   });
@@ -187,58 +157,28 @@ export async function deletePhoto(photoId: string) {
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
-// Mueve una foto a la posición `targetIndex` del grupo `targetGroupIndex`
-// (arrastre entre grupos, o reordenar dentro del mismo grupo), renumerando
-// tanto el grupo de origen como el de destino para que queden sin huecos.
-export async function movePhoto(
+// Mueve una foto a la posición `targetIndex` dentro de la secuencia continua
+// de la galería (arrastrar para reordenar), renumerando el resto.
+export async function reorderPhoto(
   galleryId: string,
   photoId: string,
-  targetGroupIndex: number,
   targetIndex: number,
 ) {
-  const photo = await prisma.photo.findUnique({ where: { id: photoId } });
-  if (!photo || photo.galleryId !== galleryId) return;
-
-  const sourceGroupIndex = photo.groupIndex;
-  const sameGroup = sourceGroupIndex === targetGroupIndex;
-
-  const targetSiblings = await prisma.photo.findMany({
-    where: {
-      galleryId,
-      groupIndex: targetGroupIndex,
-      id: { not: photoId },
-    },
+  const siblings = await prisma.photo.findMany({
+    where: { galleryId, id: { not: photoId } },
     orderBy: { order: "asc" },
     select: { id: true },
   });
 
-  const clampedIndex = Math.max(0, Math.min(targetIndex, targetSiblings.length));
-  const newTargetOrder = [...targetSiblings];
-  newTargetOrder.splice(clampedIndex, 0, { id: photoId });
+  const clampedIndex = Math.max(0, Math.min(targetIndex, siblings.length));
+  const newOrder = [...siblings];
+  newOrder.splice(clampedIndex, 0, { id: photoId });
 
-  const updates = newTargetOrder.map((p, i) =>
-    prisma.photo.update({
-      where: { id: p.id },
-      data: {
-        order: i,
-        ...(p.id === photoId ? { groupIndex: targetGroupIndex } : {}),
-      },
-    }),
+  await prisma.$transaction(
+    newOrder.map((p, i) =>
+      prisma.photo.update({ where: { id: p.id }, data: { order: i } }),
+    ),
   );
 
-  if (!sameGroup) {
-    const sourceSiblings = await prisma.photo.findMany({
-      where: { galleryId, groupIndex: sourceGroupIndex, id: { not: photoId } },
-      orderBy: { order: "asc" },
-      select: { id: true },
-    });
-    updates.push(
-      ...sourceSiblings.map((p, i) =>
-        prisma.photo.update({ where: { id: p.id }, data: { order: i } }),
-      ),
-    );
-  }
-
-  await prisma.$transaction(updates);
   revalidatePath(`/admin/galleries/${galleryId}`);
 }
