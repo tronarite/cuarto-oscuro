@@ -12,6 +12,7 @@ import {
   deleteFileIfExists,
 } from "@/lib/storage";
 import { getSettings } from "@/lib/settings";
+import { applyPinning } from "@/lib/photo-order";
 
 export interface UploadFormState {
   error?: string;
@@ -145,6 +146,39 @@ export async function toggleHomeFeatured(
   return {};
 }
 
+// Ancla una foto a su posición actual (o la desancla). Una foto anclada
+// mantiene ese índice fijo aunque se borren o reordenen otras: ver
+// applyPinning, que se usa al maquetar tanto en el editor como en la
+// galería pública.
+export async function togglePinned(photoId: string, next: boolean) {
+  const photo = await prisma.photo.findUnique({ where: { id: photoId } });
+  if (!photo) return;
+
+  if (!next) {
+    await prisma.photo.update({
+      where: { id: photoId },
+      data: { pinnedPosition: null },
+    });
+    revalidatePath(`/admin/galleries/${photo.galleryId}`);
+    revalidatePath("/");
+    return;
+  }
+
+  const siblings = await prisma.photo.findMany({
+    where: { galleryId: photo.galleryId },
+    select: { id: true, order: true, pinnedPosition: true },
+  });
+  const arranged = applyPinning(siblings);
+  const index = arranged.findIndex((p) => p.id === photoId);
+
+  await prisma.photo.update({
+    where: { id: photoId },
+    data: { pinnedPosition: index === -1 ? photo.order : index },
+  });
+  revalidatePath(`/admin/galleries/${photo.galleryId}`);
+  revalidatePath("/");
+}
+
 export async function deletePhoto(photoId: string) {
   const photo = await prisma.photo.findUnique({ where: { id: photoId } });
   if (!photo) return;
@@ -184,10 +218,18 @@ export async function swapPhotoOrder(
   if (photoIdA === photoIdB) return;
 
   const [a, b] = await Promise.all([
-    prisma.photo.findUnique({ where: { id: photoIdA }, select: { order: true, galleryId: true } }),
-    prisma.photo.findUnique({ where: { id: photoIdB }, select: { order: true, galleryId: true } }),
+    prisma.photo.findUnique({
+      where: { id: photoIdA },
+      select: { order: true, galleryId: true, pinnedPosition: true },
+    }),
+    prisma.photo.findUnique({
+      where: { id: photoIdB },
+      select: { order: true, galleryId: true, pinnedPosition: true },
+    }),
   ]);
   if (!a || !b || a.galleryId !== galleryId || b.galleryId !== galleryId) return;
+  // Una foto anclada no se mueve arrastrando otra encima (ni al revés).
+  if (a.pinnedPosition != null || b.pinnedPosition != null) return;
 
   await prisma.$transaction([
     prisma.photo.update({ where: { id: photoIdA }, data: { order: b.order } }),

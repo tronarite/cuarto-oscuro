@@ -6,11 +6,13 @@ import { MasonryGrid, type MasonryItem } from "@/components/MasonryGrid";
 import { exifLine, type ExifSource } from "@/lib/exif-format";
 import { seededRandom } from "@/lib/seeded-random";
 import { slotSizeForIndex, type GalleryLayout } from "@/lib/grid-templates";
+import { applyPinning } from "@/lib/photo-order";
 import { PresentationMode } from "@/components/PresentationMode";
 
 export interface GalleryPhoto extends ExifSource {
   id: string;
   order: number;
+  pinnedPosition: number | null;
   width: number | null;
   height: number | null;
   description: string | null;
@@ -88,9 +90,10 @@ export function GalleryView({
   const [openId, setOpenId] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
-  const ordered: LaidOutPhoto[] = [...photos]
-    .sort((a, b) => a.order - b.order)
-    .map((photo, i) => ({ ...photo, slotSize: slotSizeForIndex(layout, i) }));
+  const ordered: LaidOutPhoto[] = applyPinning(photos).map((photo, i) => ({
+    ...photo,
+    slotSize: slotSizeForIndex(layout, i),
+  }));
 
   return (
     <>

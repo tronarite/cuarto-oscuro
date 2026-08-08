@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { MasonryGrid, type MasonryItem } from "@/components/MasonryGrid";
 import { exifLine, type ExifSource } from "@/lib/exif-format";
 import { slotSizeForIndex, SLOT_LABEL, type GalleryLayout } from "@/lib/grid-templates";
+import { applyPinning } from "@/lib/photo-order";
 
 interface PhotoItem extends ExifSource {
   id: string;
   order: number;
+  pinnedPosition: number | null;
   width: number | null;
   height: number | null;
   description: string | null;
@@ -26,6 +28,7 @@ interface PhotoManagerListProps {
     photoId: string,
     next: boolean,
   ) => Promise<{ error?: string }>;
+  onTogglePinned: (photoId: string, next: boolean) => Promise<void>;
   onDelete: (photoId: string) => Promise<void>;
 }
 
@@ -35,6 +38,7 @@ export function PhotoManagerList({
   onSwap,
   onUpdateDescription,
   onToggleHomeFeatured,
+  onTogglePinned,
   onDelete,
 }: PhotoManagerListProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -78,16 +82,25 @@ export function PhotoManagerList({
     return <p className="text-sm text-muted-foreground">Todavía no hay fotos.</p>;
   }
 
-  const ordered: LaidOutPhoto[] = [...photos]
-    .sort((a, b) => a.order - b.order)
-    .map((photo, i) => ({ ...photo, slotSize: slotSizeForIndex(layout, i) }));
+  const ordered: LaidOutPhoto[] = applyPinning(photos).map((photo, i) => ({
+    ...photo,
+    slotSize: slotSizeForIndex(layout, i),
+  }));
 
-  function handleDrop(e: React.DragEvent, targetId: string) {
+  function handleDrop(e: React.DragEvent, targetPhoto: LaidOutPhoto) {
     e.preventDefault();
     e.stopPropagation();
+    if (targetPhoto.pinnedPosition != null) {
+      setDraggingId(null);
+      return;
+    }
     const sourceId = e.dataTransfer.getData("text/plain");
-    if (sourceId && sourceId !== targetId) onSwap(sourceId, targetId);
+    if (sourceId && sourceId !== targetPhoto.id) onSwap(sourceId, targetPhoto.id);
     setDraggingId(null);
+  }
+
+  async function handleTogglePinned(photoId: string, next: boolean) {
+    await onTogglePinned(photoId, next);
   }
 
   async function handleToggleHomeFeatured(photoId: string, next: boolean) {
@@ -105,19 +118,20 @@ export function PhotoManagerList({
         items={ordered}
         renderItem={(photo) => {
           const specs = exifLine(photo);
+          const pinned = photo.pinnedPosition != null;
           return (
             <div
-              draggable
+              draggable={!pinned}
               onDragStart={(e) => {
                 e.dataTransfer.setData("text/plain", photo.id);
                 setDraggingId(photo.id);
               }}
               onDragEnd={() => setDraggingId(null)}
               onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => handleDrop(e, photo.id)}
-              className={`group relative block h-full w-full cursor-grab overflow-hidden rounded-xl bg-surface active:cursor-grabbing ${
-                draggingId === photo.id ? "opacity-40" : ""
-              }`}
+              onDrop={(e) => handleDrop(e, photo)}
+              className={`group relative block h-full w-full overflow-hidden rounded-xl bg-surface ${
+                pinned ? "cursor-default ring-2 ring-amber-400" : "cursor-grab active:cursor-grabbing"
+              } ${draggingId === photo.id ? "opacity-40" : ""}`}
             >
               {photo.thumbPath && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -134,6 +148,18 @@ export function PhotoManagerList({
                   {SLOT_LABEL[photo.slotSize]}
                 </span>
                 <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePinned(photo.id, !pinned)}
+                    title="Anclar en esta posición: no se mueve al borrar u ordenar otras"
+                    className={`rounded-full px-2 py-0.5 text-[11px] backdrop-blur-sm transition-all active:scale-90 ${
+                      pinned
+                        ? "bg-amber-400 text-black"
+                        : "bg-black/50 text-white/80 hover:bg-black/70"
+                    }`}
+                  >
+                    {pinned ? "Anclada" : "Anclar"}
+                  </button>
                   <button
                     type="button"
                     onClick={() =>

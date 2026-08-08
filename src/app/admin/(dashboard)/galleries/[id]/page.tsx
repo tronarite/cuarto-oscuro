@@ -14,6 +14,7 @@ import {
   uploadPhoto,
   updatePhotoDescription,
   toggleHomeFeatured,
+  togglePinned,
   deletePhoto,
   swapPhotoOrder,
 } from "./photo-actions";
@@ -100,6 +101,7 @@ export default async function EditGalleryPage({
           onSwap={boundSwap}
           onUpdateDescription={updatePhotoDescription}
           onToggleHomeFeatured={toggleHomeFeatured}
+          onTogglePinned={togglePinned}
           onDelete={deletePhoto}
         />
       </div>

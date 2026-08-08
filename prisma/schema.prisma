@@ -79,6 +79,12 @@ model Photo {
   // las que se muestran en el raíl de la portada.
   homeFeatured Boolean @default(false)
 
+  // Índice fijo (0-based) que esta foto debe ocupar en la secuencia
+  // mostrada, sin importar qué se borre o reordene alrededor. null =
+  // sin anclar (sigue el orden normal por `order`). Se calcula al anclar
+  // y no se toca hasta desanclar; ver src/lib/photo-order.ts.
+  pinnedPosition Int?
+
   // SHA-256 del archivo original: evita subir la misma foto dos veces a
   // la misma galería.
   contentHash String
