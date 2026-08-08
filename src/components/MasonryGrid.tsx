@@ -13,12 +13,13 @@ export interface MasonryItem {
 
 const GAP = 12;
 
-// Grande ocupa el doble de ancho; mediana es una columna pero más alta;
-// pequeña es una columna y más compacta.
-const SIZE_CONFIG: Record<SlotSize, { span: number; heightMultiplier: number }> = {
-  LARGE: { span: 2, heightMultiplier: 1.15 },
-  MEDIUM: { span: 1, heightMultiplier: 1.25 },
-  SMALL: { span: 1, heightMultiplier: 0.85 },
+// El tamaño de cada hueco varía SOLO por el número de columnas que ocupa,
+// nunca deformando la altura respecto a la proporción real de la foto:
+// así "object-contain" nunca tiene que recortar nada, en ningún tamaño.
+const SIZE_CONFIG: Record<SlotSize, { span: number }> = {
+  LARGE: { span: 3 },
+  MEDIUM: { span: 2 },
+  SMALL: { span: 1 },
 };
 
 function columnsForWidth(width: number): number {
@@ -51,11 +52,11 @@ function computeLayout<T extends MasonryItem>(
   const placements: Placement[] = [];
 
   for (const item of items) {
-    const { span: configSpan, heightMultiplier } = SIZE_CONFIG[item.slotSize];
+    const { span: configSpan } = SIZE_CONFIG[item.slotSize];
     const span = Math.min(configSpan, columns);
     const aspectRatio = item.width && item.height ? item.width / item.height : 1;
     const width = columnWidth * span + GAP * (span - 1);
-    const height = (width / aspectRatio) * heightMultiplier;
+    const height = width / aspectRatio;
 
     let bestCol = 0;
     let bestY = Infinity;

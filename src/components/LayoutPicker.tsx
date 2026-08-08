@@ -10,7 +10,8 @@ import {
 
 const LAYOUT_OPTIONS: GalleryLayout[] = ["MIXED", "LARGE", "COMPACT", "BALANCED"];
 
-const ROW_SPAN: Record<SlotSize, number> = { SMALL: 2, MEDIUM: 3, LARGE: 4 };
+const COL_SPAN: Record<SlotSize, number> = { SMALL: 1, MEDIUM: 2, LARGE: 2 };
+const ROW_SPAN: Record<SlotSize, number> = { SMALL: 2, MEDIUM: 3, LARGE: 5 };
 
 function MiniPattern({ layout }: { layout: GalleryLayout }) {
   const pattern = previewPattern(layout, 8);
@@ -24,7 +25,7 @@ function MiniPattern({ layout }: { layout: GalleryLayout }) {
           key={i}
           className="rounded-[3px] bg-current opacity-60"
           style={{
-            gridColumn: `span ${slot === "LARGE" ? 2 : 1}`,
+            gridColumn: `span ${COL_SPAN[slot]}`,
             gridRow: `span ${ROW_SPAN[slot]}`,
           }}
         />

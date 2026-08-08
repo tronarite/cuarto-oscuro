@@ -107,6 +107,37 @@ export async function updatePhotoDescription(
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
+const MAX_HOME_FEATURED_PER_GALLERY = 3;
+
+export interface ToggleHomeFeaturedResult {
+  error?: string;
+}
+
+// Hasta 3 fotos por galería pueden marcarse para aparecer en el raíl de
+// la portada. Se comprueba aquí (no en el esquema) porque SQLite no
+// puede expresar "como mucho 3 filas true" como restricción.
+export async function toggleHomeFeatured(
+  photoId: string,
+  next: boolean,
+): Promise<ToggleHomeFeaturedResult> {
+  const photo = await prisma.photo.findUnique({ where: { id: photoId } });
+  if (!photo) return { error: "Foto no encontrada." };
+
+  if (next) {
+    const count = await prisma.photo.count({
+      where: { galleryId: photo.galleryId, homeFeatured: true },
+    });
+    if (count >= MAX_HOME_FEATURED_PER_GALLERY) {
+      return { error: "Ya hay 3 fotos destacadas para portada en esta galería." };
+    }
+  }
+
+  await prisma.photo.update({ where: { id: photoId }, data: { homeFeatured: next } });
+  revalidatePath(`/admin/galleries/${photo.galleryId}`);
+  revalidatePath("/");
+  return {};
+}
+
 export async function deletePhoto(photoId: string) {
   const photo = await prisma.photo.findUnique({ where: { id: photoId } });
   if (!photo) return;

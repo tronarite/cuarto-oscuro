@@ -59,7 +59,7 @@ function Tile({
         alt={photo.description ?? ""}
         draggable={false}
         onContextMenu={(e) => e.preventDefault()}
-        className="h-full w-full select-none object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        className="h-full w-full select-none object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
       />
       {hasCaption && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3 pt-10 text-left">

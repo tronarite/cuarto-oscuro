@@ -43,7 +43,7 @@ export function FeaturedRail({
                   src={`/api/img/thumb/${photo.id}`}
                   alt=""
                   draggable={false}
-                  className="h-full w-full select-none object-cover"
+                  className="h-full w-full select-none object-contain"
                 />
               </Link>
             ))}
