@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/db";
 import { createAdminSession, destroyAdminSession } from "@/lib/admin-auth";
 
 export async function loginAdmin(
@@ -9,7 +11,15 @@ export async function loginAdmin(
 ): Promise<{ error?: string }> {
   const password = String(formData.get("password") ?? "");
 
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
+  const settings = await prisma.settings.findUnique({ where: { id: 1 } });
+  if (!settings?.adminPasswordHash) {
+    redirect("/admin/setup");
+  }
+
+  const valid = password
+    ? await bcrypt.compare(password, settings.adminPasswordHash)
+    : false;
+  if (!valid) {
     return { error: "Contraseña incorrecta." };
   }
 

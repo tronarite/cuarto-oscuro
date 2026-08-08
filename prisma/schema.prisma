@@ -33,6 +33,12 @@ model Settings {
   id               Int     @id @default(1)
   watermarkEnabled Boolean @default(true)
   watermarkText    String  @default("© Galería fotográfica")
+
+  // Contraseña del panel de administración (bcrypt). null = todavía sin
+  // configurar: proxy.ts manda a /admin/setup para elegirla la primera
+  // vez que se visita el sitio, en vez de venir fija por variable de
+  // entorno.
+  adminPasswordHash String?
 }
 
 model Gallery {

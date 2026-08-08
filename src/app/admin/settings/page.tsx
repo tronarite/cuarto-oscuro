@@ -2,6 +2,7 @@ import { getSettings } from "@/lib/settings";
 import { updateWatermarkSettings } from "@/app/admin/settings-actions";
 import { WatermarkSettingsForm } from "@/components/WatermarkSettingsForm";
 import { ReprocessPhotosButton } from "@/components/ReprocessPhotosButton";
+import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 
 export default async function AdminSettingsPage() {
   const settings = await getSettings();
@@ -34,6 +35,15 @@ export default async function AdminSettingsPage() {
         </p>
         <div className="mt-3">
           <ReprocessPhotosButton />
+        </div>
+      </section>
+
+      <section className="mt-10 border-t border-neutral-200 pt-6">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Contraseña de administrador
+        </h2>
+        <div className="mt-3">
+          <ChangePasswordForm />
         </div>
       </section>
     </main>
