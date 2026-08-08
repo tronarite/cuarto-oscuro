@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Quita el indicador flotante de desarrollo (el círculo "N" abajo a la
+  // izquierda); solo aparece con `next dev`, nunca en producción.
+  devIndicators: false,
   experimental: {
     serverActions: {
       // Subida de fotos en batch vía Server Action: varias fotos de cámara
