@@ -4,7 +4,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
 
 export default async function Home() {
-  const [galleries, featuredPhotos] = await Promise.all([
+  const [galleries, featuredPhotos, visitAggregate] = await Promise.all([
     prisma.gallery.findMany({
       where: { privacy: "PUBLIC" },
       orderBy: { createdAt: "desc" },
@@ -19,7 +19,11 @@ export default async function Home() {
       },
       orderBy: { createdAt: "desc" },
     }),
+    // Suma de todas las galerías, no solo las públicas listadas aquí: es
+    // el total de visitas a la web en sí, no un desglose por galería.
+    prisma.gallery.aggregate({ _sum: { visitCount: true } }),
   ]);
+  const totalVisits = visitAggregate._sum.visitCount ?? 0;
 
   const railPhotos = featuredPhotos.map((photo) => ({
     id: photo.id,
@@ -37,6 +41,9 @@ export default async function Home() {
           </h1>
           <ThemeToggle />
         </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {totalVisits} {totalVisits === 1 ? "visita en total" : "visitas en total"}
+        </p>
 
         <ul className="mt-12 divide-y divide-border">
           {galleries.map((gallery) => (
@@ -45,13 +52,8 @@ export default async function Home() {
                 href={`/galeria/${gallery.slug}`}
                 className="group flex items-center justify-between py-4 transition-all duration-300 hover:text-muted-foreground active:scale-[0.98]"
               >
-                <span>
-                  <span className="block text-xl font-medium tracking-tight">
-                    {gallery.title}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {gallery.visitCount} {gallery.visitCount === 1 ? "visita" : "visitas"}
-                  </span>
+                <span className="text-xl font-medium tracking-tight">
+                  {gallery.title}
                 </span>
                 <span className="text-muted-foreground transition-transform duration-300 ease-out group-hover:translate-x-1">
                   →
