@@ -3,6 +3,8 @@ import Link from "next/link";
 export interface RailPhoto {
   id: string;
   gallerySlug: string;
+  width: number | null;
+  height: number | null;
 }
 
 export function FeaturedRail({
@@ -27,7 +29,13 @@ export function FeaturedRail({
               <Link
                 key={`${copy}-${photo.id}`}
                 href={`/galeria/${photo.gallerySlug}`}
-                className="pointer-events-auto block aspect-[3/4] w-full overflow-hidden rounded-xl bg-surface"
+                style={{
+                  aspectRatio:
+                    photo.width && photo.height
+                      ? `${photo.width} / ${photo.height}`
+                      : "3 / 4",
+                }}
+                className="pointer-events-auto block w-full overflow-hidden rounded-xl bg-surface"
                 tabIndex={copy === 1 ? -1 : undefined}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

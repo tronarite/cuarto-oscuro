@@ -3,47 +3,17 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MasonryGrid, type FeatureLevel } from "@/components/MasonryGrid";
+import { exifLine, type ExifSource } from "@/lib/exif-format";
+import { seededRandom } from "@/lib/seeded-random";
 
-export interface GalleryPhoto {
+export interface GalleryPhoto extends ExifSource {
   id: string;
   order: number;
   featureLevel: FeatureLevel;
   width: number | null;
   height: number | null;
   description: string | null;
-  cameraMake: string | null;
-  cameraModel: string | null;
-  lens: string | null;
-  iso: number | null;
-  aperture: number | null;
-  shutterSpeed: string | null;
-  focalLength: number | null;
 }
-
-function cameraLabel(make: string | null, model: string | null): string {
-  if (make && model) {
-    // Muchas cámaras ya incluyen la marca dentro del modelo del EXIF
-    // (ej. modelo "Canon EOS 600D" con marca "Canon"): evita duplicarla.
-    return model.toLowerCase().startsWith(make.toLowerCase())
-      ? model
-      : `${make} ${model}`;
-  }
-  return make || model || "";
-}
-
-function exifLine(photo: GalleryPhoto): string[] {
-  const parts: string[] = [];
-  const camera = cameraLabel(photo.cameraMake, photo.cameraModel);
-  if (camera) parts.push(camera);
-  if (photo.lens) parts.push(photo.lens);
-  if (photo.focalLength) parts.push(`${photo.focalLength}mm`);
-  if (photo.aperture) parts.push(`f/${photo.aperture}`);
-  if (photo.shutterSpeed) parts.push(photo.shutterSpeed);
-  if (photo.iso) parts.push(`ISO ${photo.iso}`);
-  return parts;
-}
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 function Tile({
   photo,
@@ -55,14 +25,29 @@ function Tile({
   const specs = exifLine(photo);
   const hasCaption = Boolean(photo.description) || specs.length > 0;
 
+  // Variación "aleatoria" pero estable por foto (misma semilla = mismo
+  // valor siempre) para que cada foto entre a su aire, no todas en fila.
+  const rSpin = seededRandom(`${photo.id}-r`);
+  const rDrift = seededRandom(`${photo.id}-x`);
+  const rDelay = seededRandom(`${photo.id}-d`);
+  const rotate = (rSpin - 0.5) * 7; // -3.5° a 3.5°
+  const x = (rDrift - 0.5) * 28; // -14px a 14px
+  const y = 30 + rDrift * 24; // 30-54px
+
   return (
     <motion.button
       type="button"
       onClick={() => onOpen(photo.id)}
-      initial={{ y: 18 }}
-      whileInView={{ y: 0 }}
-      viewport={{ once: true, amount: 0.4 }}
-      transition={{ duration: 0.5, ease: EASE }}
+      initial={{ y, x, rotate, scale: 0.94 }}
+      whileInView={{ y: 0, x: 0, rotate: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{
+        type: "spring",
+        stiffness: 110,
+        damping: 14,
+        mass: 0.7,
+        delay: rDelay * 0.2,
+      }}
       className="group relative block h-full w-full overflow-hidden rounded-xl bg-surface"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}

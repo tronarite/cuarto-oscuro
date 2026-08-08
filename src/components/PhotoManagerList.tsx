@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { MasonryGrid, type FeatureLevel } from "@/components/MasonryGrid";
+import { exifLine, type ExifSource } from "@/lib/exif-format";
 
-interface PhotoItem {
+interface PhotoItem extends ExifSource {
   id: string;
   order: number;
   featureLevel: FeatureLevel;
@@ -21,23 +22,29 @@ interface PhotoManagerListProps {
   onDelete: (photoId: string) => Promise<void>;
 }
 
-const NEXT_LEVEL: Record<FeatureLevel, FeatureLevel> = {
-  NONE: "SECONDARY",
-  SECONDARY: "PRIMARY",
-  PRIMARY: "NONE",
-};
-
-const LEVEL_LABEL: Record<FeatureLevel, string> = {
-  NONE: "Sin destacar",
-  SECONDARY: "Destacada secundaria",
-  PRIMARY: "Destacada principal",
-};
-
-const LEVEL_ICON: Record<FeatureLevel, string> = {
-  NONE: "☆",
-  SECONDARY: "◐",
-  PRIMARY: "★",
-};
+function FeatureButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`pointer-events-auto rounded-full px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm transition-colors ${
+        active
+          ? "bg-white text-black"
+          : "bg-black/50 text-white/80 hover:bg-black/70"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
 export function PhotoManagerList({
   photos,
@@ -66,12 +73,12 @@ export function PhotoManagerList({
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => handleDrop(e, ordered.length)}
-      className="rounded-md border border-border p-2"
     >
       <MasonryGrid
         items={ordered}
         renderItem={(photo) => {
           const index = ordered.indexOf(photo);
+          const specs = exifLine(photo);
           return (
             <div
               draggable
@@ -82,7 +89,7 @@ export function PhotoManagerList({
               onDragEnd={() => setDraggingId(null)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => handleDrop(e, index)}
-              className={`group relative flex h-full w-full flex-col gap-1 rounded-md p-1 ${
+              className={`group relative block h-full w-full cursor-grab overflow-hidden rounded-xl bg-surface active:cursor-grabbing ${
                 draggingId === photo.id ? "opacity-40" : ""
               }`}
             >
@@ -91,36 +98,60 @@ export function PhotoManagerList({
                 <img
                   src={`/api/img/thumb/${photo.id}`}
                   alt=""
-                  className="h-full min-h-0 flex-1 cursor-grab rounded-md object-cover active:cursor-grabbing"
+                  draggable={false}
+                  className="h-full w-full select-none object-cover"
                 />
               )}
-              <div className="pointer-events-none absolute inset-x-1 top-1 flex justify-between opacity-0 transition-opacity group-hover:opacity-100">
-                <button
-                  type="button"
-                  onClick={() => onSetFeatureLevel(photo.id, NEXT_LEVEL[photo.featureLevel])}
-                  className="pointer-events-auto rounded bg-black/60 px-1.5 py-0.5 text-xs text-white"
-                  title={`${LEVEL_LABEL[photo.featureLevel]} (clic para cambiar)`}
-                >
-                  {LEVEL_ICON[photo.featureLevel]}
-                </button>
+
+              <div className="absolute inset-x-2 top-2 flex items-center justify-between">
+                <div className="flex gap-1">
+                  <FeatureButton
+                    active={photo.featureLevel === "PRIMARY"}
+                    label="Principal"
+                    onClick={() =>
+                      onSetFeatureLevel(
+                        photo.id,
+                        photo.featureLevel === "PRIMARY" ? "NONE" : "PRIMARY",
+                      )
+                    }
+                  />
+                  <FeatureButton
+                    active={photo.featureLevel === "SECONDARY"}
+                    label="Secundaria"
+                    onClick={() =>
+                      onSetFeatureLevel(
+                        photo.id,
+                        photo.featureLevel === "SECONDARY" ? "NONE" : "SECONDARY",
+                      )
+                    }
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => {
                     if (confirm("¿Eliminar esta foto?")) onDelete(photo.id);
                   }}
-                  className="pointer-events-auto rounded bg-black/60 px-1.5 py-0.5 text-xs text-white"
-                  title="Eliminar"
+                  className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] text-white/80 backdrop-blur-sm transition-colors hover:bg-black/70"
                 >
-                  ✕
+                  Eliminar
                 </button>
               </div>
-              <textarea
-                defaultValue={photo.description ?? ""}
-                placeholder="Descripción…"
-                rows={1}
-                onBlur={(e) => onUpdateDescription(photo.id, e.target.value)}
-                className="w-full shrink-0 resize-none rounded border border-border bg-transparent px-1 py-0.5 text-xs outline-none focus:border-muted-foreground"
-              />
+
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-12">
+                <input
+                  type="text"
+                  defaultValue={photo.description ?? ""}
+                  placeholder="Añadir pie de foto…"
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={(e) => onUpdateDescription(photo.id, e.target.value)}
+                  className="pointer-events-auto w-full bg-transparent text-sm font-medium text-white placeholder:text-white/50 outline-none"
+                />
+                {specs.length > 0 && (
+                  <p className="mt-0.5 text-[11px] text-white/70">
+                    {specs.join(" · ")}
+                  </p>
+                )}
+              </div>
             </div>
           );
         }}

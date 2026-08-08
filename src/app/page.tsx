@@ -11,7 +11,12 @@ export default async function Home() {
     }),
     prisma.photo.findMany({
       where: { featureLevel: "PRIMARY", gallery: { privacy: "PUBLIC" } },
-      select: { id: true, gallery: { select: { slug: true } } },
+      select: {
+        id: true,
+        width: true,
+        height: true,
+        gallery: { select: { slug: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 24,
     }),
@@ -19,6 +24,8 @@ export default async function Home() {
 
   const railPhotos = primaryPhotos.map((p) => ({
     id: p.id,
+    width: p.width,
+    height: p.height,
     gallerySlug: p.gallery.slug,
   }));
   const leftRail = railPhotos.filter((_, i) => i % 2 === 0);
