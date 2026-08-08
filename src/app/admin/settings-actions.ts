@@ -16,6 +16,29 @@ export async function updateWatermarkSettings(
   revalidatePath("/admin/settings");
 }
 
+export async function updateSiteText(title: string, subtitle: string) {
+  const siteTitle = title.trim() || "Galería fotográfica";
+  const siteSubtitle = subtitle.trim() || null;
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { siteTitle, siteSubtitle },
+    create: { id: 1, siteTitle, siteSubtitle },
+  });
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+}
+
+export async function updateAboutText(text: string) {
+  const aboutText = text.trim() || null;
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { aboutText },
+    create: { id: 1, aboutText },
+  });
+  revalidatePath("/sobre-mi");
+  revalidatePath("/admin/settings");
+}
+
 export interface ChangePasswordState {
   error?: string;
   success?: boolean;

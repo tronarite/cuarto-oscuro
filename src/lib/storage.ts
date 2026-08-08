@@ -35,6 +35,13 @@ export function photoPaths(
   };
 }
 
+// Nombre fijo: cada foto nueva de "Sobre mí" sustituye a la anterior en
+// el mismo sitio, no hace falta llevar la cuenta de archivos viejos.
+export function aboutPhotoPath(): { rel: string; abs: string } {
+  const rel = path.join("about", "photo.webp");
+  return { rel, abs: path.join(UPLOADS_ROOT, rel) };
+}
+
 export async function writeUploadFile(absPath: string, data: Buffer) {
   await fs.mkdir(path.dirname(absPath), { recursive: true });
   await fs.writeFile(absPath, data);

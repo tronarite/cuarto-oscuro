@@ -39,6 +39,18 @@ model Settings {
   // vez que se visita el sitio, en vez de venir fija por variable de
   // entorno.
   adminPasswordHash String?
+
+  // Título y subtítulo editables de la portada.
+  siteTitle    String  @default("Galería fotográfica")
+  siteSubtitle String?
+
+  // Página "Sobre mí": texto y foto (procesada, sin marca de agua, sin
+  // recortar — se guardan también sus dimensiones para poder maquetar
+  // respetando su proporción real).
+  aboutText        String?
+  aboutPhotoPath   String?
+  aboutPhotoWidth  Int?
+  aboutPhotoHeight Int?
 }
 
 model Gallery {

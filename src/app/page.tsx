@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
 
 export default async function Home() {
-  const [galleries, featuredPhotos, visitAggregate] = await Promise.all([
+  const [settings, galleries, featuredPhotos, visitAggregate] = await Promise.all([
+    getSettings(),
     prisma.gallery.findMany({
       where: { privacy: "PUBLIC" },
       orderBy: { createdAt: "desc" },
@@ -37,12 +39,25 @@ export default async function Home() {
       <div className="w-full shrink-0 border-border px-6 py-16 lg:w-[26rem] lg:border-r lg:px-10">
         <div className="flex items-center justify-between">
           <h1 className="text-4xl font-semibold tracking-tight">
-            Galería fotográfica
+            {settings.siteTitle}
           </h1>
-          <ThemeToggle />
+          <div className="flex items-center gap-4">
+            <Link
+              href="/sobre-mi"
+              className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sobre mí
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
+        {settings.siteSubtitle && (
+          <p className="mt-2 text-lg text-muted-foreground">
+            {settings.siteSubtitle}
+          </p>
+        )}
         <p className="mt-2 text-sm text-muted-foreground">
-          {totalVisits} {totalVisits === 1 ? "visita en total" : "visitas en total"}
+          {totalVisits} {totalVisits === 1 ? "visita" : "visitas"}
         </p>
 
         <ul className="mt-12 divide-y divide-border">

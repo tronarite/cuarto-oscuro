@@ -1,8 +1,14 @@
 import { getSettings } from "@/lib/settings";
-import { updateWatermarkSettings } from "@/app/admin/settings-actions";
+import {
+  updateWatermarkSettings,
+  updateSiteText,
+  updateAboutText,
+} from "@/app/admin/settings-actions";
 import { WatermarkSettingsForm } from "@/components/WatermarkSettingsForm";
 import { ReprocessPhotosButton } from "@/components/ReprocessPhotosButton";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm";
+import { SiteTextForm } from "@/components/SiteTextForm";
+import { AboutMeForm } from "@/components/AboutMeForm";
 
 export default async function AdminSettingsPage() {
   const settings = await getSettings();
@@ -12,6 +18,35 @@ export default async function AdminSettingsPage() {
       <h1 className="text-2xl font-medium">Ajustes</h1>
 
       <section className="mt-10">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Portada
+        </h2>
+        <div className="mt-3">
+          <SiteTextForm
+            initialTitle={settings.siteTitle}
+            initialSubtitle={settings.siteSubtitle ?? ""}
+            onChange={updateSiteText}
+          />
+        </div>
+      </section>
+
+      <section className="mt-10 border-t border-neutral-200 pt-6">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Sobre mí
+        </h2>
+        <p className="mt-1 max-w-md text-sm text-muted-foreground">
+          Se muestra en una página propia, enlazada desde la portada.
+        </p>
+        <div className="mt-3">
+          <AboutMeForm
+            initialText={settings.aboutText ?? ""}
+            hasPhoto={Boolean(settings.aboutPhotoPath)}
+            onTextChange={updateAboutText}
+          />
+        </div>
+      </section>
+
+      <section className="mt-10 border-t border-neutral-200 pt-6">
         <h2 className="text-sm font-medium text-muted-foreground">
           Marca de agua
         </h2>
