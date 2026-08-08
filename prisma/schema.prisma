@@ -28,6 +28,13 @@ enum GalleryLayout {
   BALANCED
 }
 
+// Fila única con los ajustes globales del sitio (marca de agua, etc.).
+model Settings {
+  id               Int     @id @default(1)
+  watermarkEnabled Boolean @default(true)
+  watermarkText    String  @default("© Galería fotográfica")
+}
+
 model Gallery {
   id          String    @id @default(cuid())
   title       String

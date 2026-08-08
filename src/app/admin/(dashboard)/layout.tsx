@@ -12,14 +12,22 @@ export default function AdminDashboardLayout({
         <Link href="/admin" className="font-medium">
           Panel de administración
         </Link>
-        <form action={logoutAdmin}>
-          <button
-            type="submit"
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/settings"
             className="text-sm text-neutral-500 transition-all hover:text-neutral-900 active:scale-95"
           >
-            Cerrar sesión
-          </button>
-        </form>
+            Ajustes
+          </Link>
+          <form action={logoutAdmin}>
+            <button
+              type="submit"
+              className="text-sm text-neutral-500 transition-all hover:text-neutral-900 active:scale-95"
+            >
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
       </header>
       {children}
     </div>

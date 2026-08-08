@@ -1,7 +1,16 @@
 import sharp from "sharp";
 
-const DISPLAY_MAX_EDGE = 2000;
-const THUMB_MAX_EDGE = 640;
+// Resoluciones generosas: estas imágenes ya no son "originales sin
+// procesar" (nunca se sirve eso), pero deben verse nítidas incluso en
+// huecos grandes del mosaico (hasta ~900px de ancho) y en pantallas de
+// alta densidad, así que se prioriza la fidelidad sobre el peso.
+const DISPLAY_MAX_EDGE = 3200;
+const THUMB_MAX_EDGE = 1800;
+
+export interface WatermarkOptions {
+  enabled: boolean;
+  text: string;
+}
 
 function escapeXml(text: string): string {
   return text
@@ -34,6 +43,7 @@ async function toWatermarkedWebp(
   input: Buffer,
   maxEdge: number,
   quality: number,
+  watermark: WatermarkOptions,
 ): Promise<WatermarkedImage> {
   // Redimensiona primero y vuelve a leer los metadatos del resultado: la
   // orientación EXIF puede intercambiar ancho/alto, así que no se pueden
@@ -52,24 +62,28 @@ async function toWatermarkedWebp(
   const w = width ?? maxEdge;
   const h = height ?? maxEdge;
 
-  const watermarkText = process.env.WATERMARK_TEXT || "© Galería fotográfica";
+  let pipeline = sharp(resizedBuffer);
+  if (watermark.enabled && watermark.text) {
+    pipeline = pipeline.composite([
+      { input: watermarkSvg(w, h, watermark.text), blend: "over" },
+    ]);
+  }
 
-  const buffer = await sharp(resizedBuffer)
-    .composite([{ input: watermarkSvg(w, h, watermarkText), blend: "over" }])
-    .webp({ quality })
-    .toBuffer();
+  const buffer = await pipeline.webp({ quality }).toBuffer();
 
   return { buffer, width: w, height: h };
 }
 
 export async function generateDisplayImage(
   input: Buffer,
+  watermark: WatermarkOptions,
 ): Promise<WatermarkedImage> {
-  return toWatermarkedWebp(input, DISPLAY_MAX_EDGE, 82);
+  return toWatermarkedWebp(input, DISPLAY_MAX_EDGE, 90, watermark);
 }
 
 export async function generateThumbImage(
   input: Buffer,
+  watermark: WatermarkOptions,
 ): Promise<WatermarkedImage> {
-  return toWatermarkedWebp(input, THUMB_MAX_EDGE, 72);
+  return toWatermarkedWebp(input, THUMB_MAX_EDGE, 85, watermark);
 }

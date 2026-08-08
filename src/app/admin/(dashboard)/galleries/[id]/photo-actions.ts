@@ -11,6 +11,7 @@ import {
   writeUploadFile,
   deleteFileIfExists,
 } from "@/lib/storage";
+import { getSettings } from "@/lib/settings";
 
 export interface UploadFormState {
   error?: string;
@@ -49,9 +50,15 @@ export async function uploadPhoto(
   });
   const order = (lastPhoto?.order ?? -1) + 1;
 
+  const settings = await getSettings();
+  const watermark = {
+    enabled: settings.watermarkEnabled,
+    text: settings.watermarkText,
+  };
+
   const exif = await extractExif(buffer).catch(() => ({}) as ExtractedExif);
-  const display = await generateDisplayImage(buffer);
-  const thumb = await generateThumbImage(buffer);
+  const display = await generateDisplayImage(buffer, watermark);
+  const thumb = await generateThumbImage(buffer, watermark);
 
   const photo = await prisma.photo.create({
     data: {

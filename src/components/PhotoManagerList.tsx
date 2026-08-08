@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MasonryGrid, type MasonryItem } from "@/components/MasonryGrid";
 import { exifLine, type ExifSource } from "@/lib/exif-format";
 import { slotSizeForIndex, SLOT_LABEL, type GalleryLayout } from "@/lib/grid-templates";
@@ -39,6 +39,40 @@ export function PhotoManagerList({
 }: PhotoManagerListProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [homeFeaturedError, setHomeFeaturedError] = useState<string | null>(null);
+
+  // Auto-scroll de la ventana mientras se arrastra una foto cerca del
+  // borde superior/inferior, para poder llevar una foto de abajo del
+  // todo hasta arriba sin soltar y desplazar a mano.
+  useEffect(() => {
+    if (!draggingId) return;
+
+    const EDGE = 120;
+    const MAX_SPEED = 22;
+    let pointerY = 0;
+    let rafId: number;
+
+    function onDragOver(e: DragEvent) {
+      pointerY = e.clientY;
+    }
+
+    function tick() {
+      const vh = window.innerHeight;
+      if (pointerY > 0 && pointerY < EDGE) {
+        window.scrollBy(0, -MAX_SPEED * ((EDGE - pointerY) / EDGE));
+      } else if (pointerY > vh - EDGE) {
+        window.scrollBy(0, MAX_SPEED * ((pointerY - (vh - EDGE)) / EDGE));
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener("dragover", onDragOver);
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("dragover", onDragOver);
+      cancelAnimationFrame(rafId);
+    };
+  }, [draggingId]);
 
   if (photos.length === 0) {
     return <p className="text-sm text-muted-foreground">Todavía no hay fotos.</p>;
