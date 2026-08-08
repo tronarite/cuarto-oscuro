@@ -10,20 +10,36 @@ interface PhotoUploadFormProps {
   ) => Promise<UploadFormState>;
 }
 
+function UploadIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-6 w-6"
+    >
+      <path d="M12 16V4" />
+      <path d="M6.5 9.5 12 4l5.5 5.5" />
+      <path d="M4 16.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2.5" />
+    </svg>
+  );
+}
+
 export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(
     null,
   );
   const [errors, setErrors] = useState<string[]>([]);
   const [doneCount, setDoneCount] = useState<number | null>(null);
   const [skippedCount, setSkippedCount] = useState(0);
-  const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const files = Array.from(inputRef.current?.files ?? []);
+  async function uploadFiles(files: File[]) {
     if (files.length === 0) return;
 
     setBusy(true);
@@ -46,35 +62,49 @@ export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
     setSkippedCount(skipped);
     setErrors(failedNames);
     setBusy(false);
-    formRef.current?.reset();
+    if (inputRef.current) inputRef.current.value = "";
   }
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-md border border-dashed border-border p-4"
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        name="photos"
-        accept="image/*"
-        multiple
-        required
-        className="text-sm"
-      />
-      <button
-        type="submit"
-        disabled={busy}
-        className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+    <div className="flex flex-col gap-3">
+      <div
+        onClick={() => !busy && inputRef.current?.click()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          uploadFiles(Array.from(e.dataTransfer.files));
+        }}
+        className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all active:scale-[0.98] ${
+          dragging
+            ? "border-foreground bg-surface"
+            : "border-border hover:border-muted-foreground"
+        }`}
       >
-        {busy
-          ? progress
-            ? `Subiendo ${progress.done + 1} de ${progress.total}…`
-            : "Subiendo…"
-          : "Subir fotos"}
-      </button>
+        <UploadIcon />
+        <p className="text-sm font-medium">
+          {busy
+            ? progress
+              ? `Subiendo ${progress.done + 1} de ${progress.total}…`
+              : "Subiendo…"
+            : "Arrastra fotos aquí"}
+        </p>
+        {!busy && (
+          <p className="text-xs text-muted-foreground">o haz clic para elegirlas</p>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => uploadFiles(Array.from(e.target.files ?? []))}
+        />
+      </div>
       {errors.length > 0 && (
         <ul className="text-sm text-red-600">
           {errors.map((msg) => (
@@ -89,6 +119,6 @@ export function PhotoUploadForm({ action }: PhotoUploadFormProps) {
             ` ${skippedCount} ya existían en esta galería y se omitieron.`}
         </p>
       )}
-    </form>
+    </div>
   );
 }

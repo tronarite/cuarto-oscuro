@@ -87,7 +87,7 @@ export function PhotoManagerList({
                 onClick={() => {
                   if (confirm("¿Eliminar esta foto?")) onDelete(photo.id);
                 }}
-                className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] text-white/80 backdrop-blur-sm transition-colors hover:bg-black/70"
+                className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
               >
                 Eliminar
               </button>

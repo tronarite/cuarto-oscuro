@@ -1,8 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { GalleryForm } from "@/components/GalleryForm";
-import { updateGallery, deleteGallery } from "../actions";
+import { GalleryEditor } from "@/components/GalleryEditor";
+import {
+  updateGalleryTitle,
+  updateGalleryDescription,
+  updateGalleryDates,
+  updateGalleryPrivacy,
+  updateGalleryPassword,
+  updateGalleryLayout,
+  deleteGallery,
+} from "../actions";
 import {
   uploadPhoto,
   updatePhotoDescription,
@@ -12,8 +20,8 @@ import {
 import { PhotoUploadForm } from "@/components/PhotoUploadForm";
 import { PhotoManagerList } from "@/components/PhotoManagerList";
 
-function toDateInputValue(date: Date | null): string | undefined {
-  if (!date) return undefined;
+function toDateInputValue(date: Date | null): string {
+  if (!date) return "";
   return date.toISOString().slice(0, 10);
 }
 
@@ -33,7 +41,6 @@ export default async function EditGalleryPage({
 
   if (!gallery) notFound();
 
-  const boundUpdate = updateGallery.bind(null, gallery.id);
   const boundDelete = deleteGallery.bind(null, gallery.id);
   const boundUpload = uploadPhoto.bind(null, gallery.id);
   const boundSwap = swapPhotoOrder.bind(null, gallery.id);
@@ -41,33 +48,35 @@ export default async function EditGalleryPage({
   return (
     <div className="flex flex-col lg:flex-row">
       <aside className="shrink-0 border-border px-6 py-8 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:w-80 lg:overflow-y-auto lg:border-r lg:px-6">
-        <Link
-          href={`/galeria/${gallery.slug}`}
-          target="_blank"
-          className="text-xs text-neutral-500 underline"
-        >
-          Ver galería pública →
-        </Link>
-        <h1 className="mt-1 text-xl font-medium">{gallery.title}</h1>
-        <p className="mt-0.5 text-xs text-neutral-500">
-          /{gallery.slug} · {gallery.visitCount} visitas
-        </p>
+        <div className="flex items-center justify-between">
+          <Link
+            href={`/galeria/${gallery.slug}`}
+            target="_blank"
+            className="text-xs text-neutral-500 underline"
+          >
+            Ver galería pública →
+          </Link>
+          <span className="text-xs text-neutral-500">
+            {gallery.visitCount} visitas
+          </span>
+        </div>
 
-        <section className="mt-6">
-          <GalleryForm
-            action={boundUpdate}
-            submitLabel="Guardar cambios"
-            defaultValues={{
-              title: gallery.title,
-              description: gallery.description ?? undefined,
-              privacy: gallery.privacy,
-              layout: gallery.layout,
-              tripStart: toDateInputValue(gallery.tripStart),
-              tripEnd: toDateInputValue(gallery.tripEnd),
-              hasPassword: Boolean(gallery.passwordHash),
-            }}
+        <div className="mt-6">
+          <GalleryEditor
+            title={gallery.title}
+            description={gallery.description ?? ""}
+            privacy={gallery.privacy}
+            layout={gallery.layout}
+            tripStart={toDateInputValue(gallery.tripStart)}
+            tripEnd={toDateInputValue(gallery.tripEnd)}
+            onTitleChange={updateGalleryTitle.bind(null, gallery.id)}
+            onDescriptionChange={updateGalleryDescription.bind(null, gallery.id)}
+            onDatesChange={updateGalleryDates.bind(null, gallery.id)}
+            onPrivacyChange={updateGalleryPrivacy.bind(null, gallery.id)}
+            onPasswordChange={updateGalleryPassword.bind(null, gallery.id)}
+            onLayoutChange={updateGalleryLayout.bind(null, gallery.id)}
           />
-        </section>
+        </div>
 
         <section className="mt-6">
           <h2 className="text-sm font-medium">Subir fotos</h2>
@@ -81,7 +90,7 @@ export default async function EditGalleryPage({
           <form action={boundDelete} className="mt-2">
             <button
               type="submit"
-              className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-700 hover:bg-red-50"
+              className="rounded-full border border-red-300 px-3 py-1.5 text-xs text-red-700 transition-all hover:bg-red-50 active:scale-95"
             >
               Eliminar galería
             </button>

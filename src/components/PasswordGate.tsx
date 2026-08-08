@@ -33,7 +33,7 @@ export function PasswordGate({ title, action }: PasswordGateProps) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity duration-300 hover:opacity-90 disabled:opacity-50"
+          className="rounded-full bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-all duration-300 hover:opacity-90 active:scale-95 disabled:opacity-50"
         >
           {pending ? "Comprobando…" : "Entrar"}
         </button>

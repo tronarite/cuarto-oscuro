@@ -45,7 +45,7 @@ export default async function Home() {
             <li key={gallery.id}>
               <Link
                 href={`/galeria/${gallery.slug}`}
-                className="group flex items-center justify-between py-4 text-xl font-medium tracking-tight transition-colors duration-300 hover:text-muted-foreground"
+                className="group flex items-center justify-between py-4 text-xl font-medium tracking-tight transition-all duration-300 hover:text-muted-foreground active:scale-[0.98]"
               >
                 {gallery.title}
                 <span className="text-muted-foreground transition-transform duration-300 ease-out group-hover:translate-x-1">

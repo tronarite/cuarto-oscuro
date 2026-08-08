@@ -15,7 +15,7 @@ export default function AdminDashboardLayout({
         <form action={logoutAdmin}>
           <button
             type="submit"
-            className="text-sm text-neutral-500 hover:text-neutral-900"
+            className="text-sm text-neutral-500 transition-all hover:text-neutral-900 active:scale-95"
           >
             Cerrar sesión
           </button>

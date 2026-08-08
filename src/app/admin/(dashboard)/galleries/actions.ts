@@ -17,94 +17,100 @@ async function uniqueSlug(base: string): Promise<string> {
   return slug;
 }
 
-export interface GalleryFormState {
+export interface FieldState {
   error?: string;
 }
 
+// Crear una galería solo pide el título; todo lo demás (privacidad,
+// cuadrícula, fechas, fotos) se ajusta después en la página de edición,
+// donde cada campo se guarda solo al cambiarlo.
 export async function createGallery(
-  _prevState: GalleryFormState | undefined,
+  _prevState: FieldState | undefined,
   formData: FormData,
-): Promise<GalleryFormState> {
+): Promise<FieldState> {
   const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const privacy = String(formData.get("privacy") ?? "PUBLIC") as Privacy;
-  const layout = String(formData.get("layout") ?? "MIXED") as GalleryLayout;
-  const password = String(formData.get("password") ?? "");
-  const tripStart = String(formData.get("tripStart") ?? "");
-  const tripEnd = String(formData.get("tripEnd") ?? "");
-
   if (!title) return { error: "El título es obligatorio." };
-  if (privacy === "PASSWORD" && !password) {
-    return { error: "Introduce una contraseña para esta galería." };
-  }
 
   const slug = await uniqueSlug(title);
-  const passwordHash =
-    privacy === "PASSWORD" ? await bcrypt.hash(password, 10) : null;
-
   const gallery = await prisma.gallery.create({
-    data: {
-      title,
-      slug,
-      description: description || null,
-      privacy,
-      layout,
-      passwordHash,
-      tripStart: tripStart ? new Date(tripStart) : null,
-      tripEnd: tripEnd ? new Date(tripEnd) : null,
-    },
+    data: { title, slug },
   });
 
   revalidatePath("/admin");
   redirect(`/admin/galleries/${gallery.id}`);
 }
 
-export async function updateGallery(
+export async function updateGalleryTitle(
   galleryId: string,
-  _prevState: GalleryFormState | undefined,
-  formData: FormData,
-): Promise<GalleryFormState> {
-  const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const privacy = String(formData.get("privacy") ?? "PUBLIC") as Privacy;
-  const layout = String(formData.get("layout") ?? "MIXED") as GalleryLayout;
-  const password = String(formData.get("password") ?? "");
-  const tripStart = String(formData.get("tripStart") ?? "");
-  const tripEnd = String(formData.get("tripEnd") ?? "");
+  title: string,
+): Promise<FieldState> {
+  const trimmed = title.trim();
+  if (!trimmed) return { error: "El título no puede quedar vacío." };
 
-  if (!title) return { error: "El título es obligatorio." };
-  if (privacy === "PASSWORD" && !password) {
-    const existing = await prisma.gallery.findUnique({
-      where: { id: galleryId },
-      select: { passwordHash: true },
-    });
-    if (!existing?.passwordHash) {
-      return { error: "Introduce una contraseña para esta galería." };
-    }
-  }
+  await prisma.gallery.update({ where: { id: galleryId }, data: { title: trimmed } });
+  revalidatePath("/admin");
+  revalidatePath(`/admin/galleries/${galleryId}`);
+  return {};
+}
 
-  const passwordHash =
-    privacy === "PASSWORD" && password
-      ? await bcrypt.hash(password, 10)
-      : privacy === "PASSWORD"
-        ? undefined
-        : null;
+export async function updateGalleryDescription(galleryId: string, description: string) {
+  await prisma.gallery.update({
+    where: { id: galleryId },
+    data: { description: description.trim() || null },
+  });
+  revalidatePath(`/admin/galleries/${galleryId}`);
+}
 
+export async function updateGalleryDates(
+  galleryId: string,
+  tripStart: string,
+  tripEnd: string,
+) {
   await prisma.gallery.update({
     where: { id: galleryId },
     data: {
-      title,
-      description: description || null,
-      privacy,
-      layout,
-      ...(passwordHash !== undefined ? { passwordHash } : {}),
       tripStart: tripStart ? new Date(tripStart) : null,
       tripEnd: tripEnd ? new Date(tripEnd) : null,
     },
   });
+  revalidatePath(`/admin/galleries/${galleryId}`);
+}
 
+export async function updateGalleryLayout(galleryId: string, layout: GalleryLayout) {
+  await prisma.gallery.update({ where: { id: galleryId }, data: { layout } });
+  revalidatePath(`/admin/galleries/${galleryId}`);
+  revalidatePath("/");
+}
+
+// Para pública / no listada: cambia directo. La contraseña tiene su
+// propia acción porque además hay que fijar el hash.
+export async function updateGalleryPrivacy(
+  galleryId: string,
+  privacy: Extract<Privacy, "PUBLIC" | "UNLISTED">,
+) {
+  await prisma.gallery.update({
+    where: { id: galleryId },
+    data: { privacy, passwordHash: null },
+  });
   revalidatePath("/admin");
   revalidatePath(`/admin/galleries/${galleryId}`);
+  revalidatePath("/");
+}
+
+export async function updateGalleryPassword(
+  galleryId: string,
+  password: string,
+): Promise<FieldState> {
+  if (!password) return { error: "Escribe una contraseña." };
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.gallery.update({
+    where: { id: galleryId },
+    data: { privacy: "PASSWORD", passwordHash },
+  });
+  revalidatePath("/admin");
+  revalidatePath(`/admin/galleries/${galleryId}`);
+  revalidatePath("/");
   return {};
 }
 

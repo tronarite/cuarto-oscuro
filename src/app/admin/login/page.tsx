@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
           placeholder="Contraseña"
           autoFocus
           required
-          className="rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-neutral-500"
+          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
         />
         {state?.error && (
           <p className="text-sm text-red-600">{state.error}</p>
@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-all active:scale-95 disabled:opacity-50"
         >
           {pending ? "Entrando…" : "Entrar"}
         </button>

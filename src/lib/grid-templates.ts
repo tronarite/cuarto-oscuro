@@ -47,3 +47,9 @@ export function slotSizeForIndex(layout: GalleryLayout, index: number): SlotSize
   const pattern = PATTERNS[layout];
   return pattern[index % pattern.length];
 }
+
+// Primeros huecos de cada patrón, para dibujar una miniatura visual del
+// diseño (ej. en el selector de plantilla del admin).
+export function previewPattern(layout: GalleryLayout, count = 6): SlotSize[] {
+  return PATTERNS[layout].slice(0, count);
+}

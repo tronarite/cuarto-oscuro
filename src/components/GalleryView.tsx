@@ -42,6 +42,7 @@ function Tile({
       onClick={() => onOpen(photo.id)}
       initial={{ y, x, rotate, scale: 0.94 }}
       whileInView={{ y: 0, x: 0, rotate: 0, scale: 1 }}
+      whileTap={{ scale: 0.96 }}
       viewport={{ once: true, amount: 0.35 }}
       transition={{
         type: "spring",
@@ -126,7 +127,7 @@ export function GalleryView({
             <button
               type="button"
               onClick={() => setOpenId(null)}
-              className="self-start text-sm text-neutral-400 hover:text-neutral-200"
+              className="self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90"
             >
               cerrar ✕
             </button>
