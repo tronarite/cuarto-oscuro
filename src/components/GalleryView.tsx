@@ -65,7 +65,9 @@ function Tile({
       {hasCaption && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3 pt-10 text-left">
           {photo.description && (
-            <p className="text-sm font-medium text-white">{photo.description}</p>
+            <p className="truncate text-sm font-medium text-white">
+              {photo.description}
+            </p>
           )}
           {specs.length > 0 && (
             <p className="mt-0.5 text-[11px] text-white/70">{specs.join(" · ")}</p>
@@ -134,10 +136,10 @@ export function GalleryView({
             />
             <div className="text-neutral-200">
               {openPhoto.description && (
-                <p className="text-sm">{openPhoto.description}</p>
+                <p className="text-base">{openPhoto.description}</p>
               )}
               {exifLine(openPhoto).length > 0 && (
-                <p className="mt-1 text-xs text-neutral-400">
+                <p className="mt-1 text-sm text-neutral-400">
                   {exifLine(openPhoto).join(" · ")}
                 </p>
               )}
