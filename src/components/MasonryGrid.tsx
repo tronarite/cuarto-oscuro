@@ -2,23 +2,23 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 
-export type FeatureLevel = "NONE" | "SECONDARY" | "PRIMARY";
+import type { SlotSize } from "@/lib/grid-templates";
 
 export interface MasonryItem {
   id: string;
   width: number | null;
   height: number | null;
-  featureLevel: FeatureLevel;
+  slotSize: SlotSize;
 }
 
 const GAP = 12;
 
-// Principal ocupa lo mismo de ancho que secundaria, pero se renderiza más
-// alta (llama más la atención); sin etiqueta siempre va a una columna.
-const SIZE_CONFIG: Record<FeatureLevel, { span: number; heightMultiplier: number }> = {
-  PRIMARY: { span: 2, heightMultiplier: 1.25 },
-  SECONDARY: { span: 2, heightMultiplier: 1 },
-  NONE: { span: 1, heightMultiplier: 1 },
+// Grande ocupa el doble de ancho; mediana es una columna pero más alta;
+// pequeña es una columna y más compacta.
+const SIZE_CONFIG: Record<SlotSize, { span: number; heightMultiplier: number }> = {
+  LARGE: { span: 2, heightMultiplier: 1.15 },
+  MEDIUM: { span: 1, heightMultiplier: 1.25 },
+  SMALL: { span: 1, heightMultiplier: 0.85 },
 };
 
 function columnsForWidth(width: number): number {
@@ -51,7 +51,7 @@ function computeLayout<T extends MasonryItem>(
   const placements: Placement[] = [];
 
   for (const item of items) {
-    const { span: configSpan, heightMultiplier } = SIZE_CONFIG[item.featureLevel];
+    const { span: configSpan, heightMultiplier } = SIZE_CONFIG[item.slotSize];
     const span = Math.min(configSpan, columns);
     const aspectRatio = item.width && item.height ? item.width / item.height : 1;
     const width = columnWidth * span + GAP * (span - 1);

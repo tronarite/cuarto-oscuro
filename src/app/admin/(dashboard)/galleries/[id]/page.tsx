@@ -6,9 +6,8 @@ import { updateGallery, deleteGallery } from "../actions";
 import {
   uploadPhoto,
   updatePhotoDescription,
-  setFeatureLevel,
   deletePhoto,
-  reorderPhoto,
+  swapPhotoOrder,
 } from "./photo-actions";
 import { PhotoUploadForm } from "@/components/PhotoUploadForm";
 import { PhotoManagerList } from "@/components/PhotoManagerList";
@@ -37,7 +36,7 @@ export default async function EditGalleryPage({
   const boundUpdate = updateGallery.bind(null, gallery.id);
   const boundDelete = deleteGallery.bind(null, gallery.id);
   const boundUpload = uploadPhoto.bind(null, gallery.id);
-  const boundReorder = reorderPhoto.bind(null, gallery.id);
+  const boundSwap = swapPhotoOrder.bind(null, gallery.id);
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -62,6 +61,7 @@ export default async function EditGalleryPage({
               title: gallery.title,
               description: gallery.description ?? undefined,
               privacy: gallery.privacy,
+              layout: gallery.layout,
               tripStart: toDateInputValue(gallery.tripStart),
               tripEnd: toDateInputValue(gallery.tripEnd),
               hasPassword: Boolean(gallery.passwordHash),
@@ -95,8 +95,8 @@ export default async function EditGalleryPage({
         </p>
         <PhotoManagerList
           photos={gallery.photos}
-          onReorder={boundReorder}
-          onSetFeatureLevel={setFeatureLevel}
+          layout={gallery.layout}
+          onSwap={boundSwap}
           onUpdateDescription={updatePhotoDescription}
           onDelete={deletePhoto}
         />

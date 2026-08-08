@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { slugify, randomSlugSuffix } from "@/lib/slug";
 import { deleteGalleryUploads } from "@/lib/storage";
-import type { Privacy } from "@/generated/prisma/enums";
+import type { Privacy, GalleryLayout } from "@/generated/prisma/enums";
 
 async function uniqueSlug(base: string): Promise<string> {
   const initial = slugify(base) || "galeria";
@@ -28,6 +28,7 @@ export async function createGallery(
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const privacy = String(formData.get("privacy") ?? "PUBLIC") as Privacy;
+  const layout = String(formData.get("layout") ?? "MIXED") as GalleryLayout;
   const password = String(formData.get("password") ?? "");
   const tripStart = String(formData.get("tripStart") ?? "");
   const tripEnd = String(formData.get("tripEnd") ?? "");
@@ -47,6 +48,7 @@ export async function createGallery(
       slug,
       description: description || null,
       privacy,
+      layout,
       passwordHash,
       tripStart: tripStart ? new Date(tripStart) : null,
       tripEnd: tripEnd ? new Date(tripEnd) : null,
@@ -65,6 +67,7 @@ export async function updateGallery(
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const privacy = String(formData.get("privacy") ?? "PUBLIC") as Privacy;
+  const layout = String(formData.get("layout") ?? "MIXED") as GalleryLayout;
   const password = String(formData.get("password") ?? "");
   const tripStart = String(formData.get("tripStart") ?? "");
   const tripEnd = String(formData.get("tripEnd") ?? "");
@@ -93,6 +96,7 @@ export async function updateGallery(
       title,
       description: description || null,
       privacy,
+      layout,
       ...(passwordHash !== undefined ? { passwordHash } : {}),
       tripStart: tripStart ? new Date(tripStart) : null,
       tripEnd: tripEnd ? new Date(tripEnd) : null,

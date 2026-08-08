@@ -18,10 +18,14 @@ enum Privacy {
   PASSWORD
 }
 
-enum FeatureLevel {
-  NONE
-  SECONDARY
-  PRIMARY
+// Plantilla de cuadrícula fija: cada galería elige una y define el tamaño
+// de cada hueco según la posición de la foto (patrón cíclico), en vez de
+// marcar cada foto individualmente.
+enum GalleryLayout {
+  MIXED
+  LARGE
+  COMPACT
+  BALANCED
 }
 
 model Gallery {
@@ -32,8 +36,9 @@ model Gallery {
   tripStart   DateTime?
   tripEnd     DateTime?
 
-  privacy      Privacy @default(PUBLIC)
+  privacy      Privacy       @default(PUBLIC)
   passwordHash String?
+  layout       GalleryLayout @default(MIXED)
 
   visitCount Int @default(0)
 
@@ -47,11 +52,10 @@ model Photo {
   gallery  Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
   galleryId String
 
-  // Orden dentro de la galería (secuencia continua, sin salas).
+  // Orden dentro de la galería (secuencia continua, sin salas). El tamaño
+  // del hueco de cada foto se deriva de esta posición y de la plantilla
+  // de la galería (Gallery.layout), no se marca por foto.
   order Int
-
-  // Nivel de destacado: decide el tamaño del hueco en el mosaico continuo.
-  featureLevel FeatureLevel @default(NONE)
 
   // Rutas a los archivos procesados (con watermark, varias resoluciones).
   // El original sin marca se guarda aparte y nunca se expone vía app.

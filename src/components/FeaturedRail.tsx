@@ -5,7 +5,6 @@ export interface RailPhoto {
   gallerySlug: string;
   width: number | null;
   height: number | null;
-  big: boolean;
 }
 
 export function FeaturedRail({
@@ -35,9 +34,8 @@ export function FeaturedRail({
                     photo.width && photo.height
                       ? `${photo.width} / ${photo.height}`
                       : "4 / 3",
-                  width: photo.big ? "100%" : "72%",
                 }}
-                className="pointer-events-auto block shrink-0 overflow-hidden rounded-2xl bg-surface shadow-sm"
+                className="pointer-events-auto block w-full shrink-0 overflow-hidden rounded-2xl bg-surface shadow-sm"
                 tabIndex={copy === 1 ? -1 : undefined}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -2,6 +2,13 @@
 
 import { useActionState, useState } from "react";
 import type { GalleryFormState } from "@/app/admin/(dashboard)/galleries/actions";
+import {
+  LAYOUT_LABEL,
+  LAYOUT_DESCRIPTION,
+  type GalleryLayout,
+} from "@/lib/grid-templates";
+
+const LAYOUT_OPTIONS: GalleryLayout[] = ["MIXED", "LARGE", "COMPACT", "BALANCED"];
 
 interface GalleryFormProps {
   action: (
@@ -13,6 +20,7 @@ interface GalleryFormProps {
     title?: string;
     description?: string;
     privacy?: string;
+    layout?: string;
     tripStart?: string;
     tripEnd?: string;
     hasPassword?: boolean;
@@ -70,6 +78,21 @@ export function GalleryForm({
           />
         </label>
       </div>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm text-neutral-600">Cuadrícula</span>
+        <select
+          name="layout"
+          defaultValue={defaultValues?.layout ?? "MIXED"}
+          className="rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-neutral-500"
+        >
+          {LAYOUT_OPTIONS.map((option) => (
+            <option key={option} value={option}>
+              {LAYOUT_LABEL[option]} — {LAYOUT_DESCRIPTION[option]}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-neutral-600">Privacidad</span>

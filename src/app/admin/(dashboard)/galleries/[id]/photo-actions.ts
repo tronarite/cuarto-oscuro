@@ -11,23 +11,10 @@ import {
   writeUploadFile,
   deleteFileIfExists,
 } from "@/lib/storage";
-import type { FeatureLevel } from "@/generated/prisma/enums";
 
 export interface UploadFormState {
   error?: string;
   skipped?: boolean;
-}
-
-const PRIMARY_CHANCE = 0.12;
-const SECONDARY_CHANCE = 0.22;
-
-// Reparte el nivel de destacado al azar (entremezclado, sin salas): la
-// mayoría sin etiquetar, algunas secundarias y unas pocas principales.
-function randomFeatureLevel(): FeatureLevel {
-  const roll = Math.random();
-  if (roll < PRIMARY_CHANCE) return "PRIMARY";
-  if (roll < PRIMARY_CHANCE + SECONDARY_CHANCE) return "SECONDARY";
-  return "NONE";
 }
 
 // Sube una foto por llamada (el cliente itera secuencialmente sobre los
@@ -70,7 +57,6 @@ export async function uploadPhoto(
     data: {
       galleryId,
       order,
-      featureLevel: randomFeatureLevel(),
       contentHash,
       width: display.width,
       height: display.height,
@@ -121,14 +107,6 @@ export async function updatePhotoDescription(
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
-export async function setFeatureLevel(photoId: string, level: FeatureLevel) {
-  const photo = await prisma.photo.update({
-    where: { id: photoId },
-    data: { featureLevel: level },
-  });
-  revalidatePath(`/admin/galleries/${photo.galleryId}`);
-}
-
 export async function deletePhoto(photoId: string) {
   const photo = await prisma.photo.findUnique({ where: { id: photoId } });
   if (!photo) return;
@@ -157,28 +135,26 @@ export async function deletePhoto(photoId: string) {
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
-// Mueve una foto a la posición `targetIndex` dentro de la secuencia continua
-// de la galería (arrastrar para reordenar), renumerando el resto.
-export async function reorderPhoto(
+// Intercambia la posición de dos fotos (arrastrar una encima de otra):
+// como el tamaño del hueco depende de la posición según la plantilla de
+// la galería, esto es literalmente "cambiar de hueco" a las dos fotos.
+export async function swapPhotoOrder(
   galleryId: string,
-  photoId: string,
-  targetIndex: number,
+  photoIdA: string,
+  photoIdB: string,
 ) {
-  const siblings = await prisma.photo.findMany({
-    where: { galleryId, id: { not: photoId } },
-    orderBy: { order: "asc" },
-    select: { id: true },
-  });
+  if (photoIdA === photoIdB) return;
 
-  const clampedIndex = Math.max(0, Math.min(targetIndex, siblings.length));
-  const newOrder = [...siblings];
-  newOrder.splice(clampedIndex, 0, { id: photoId });
+  const [a, b] = await Promise.all([
+    prisma.photo.findUnique({ where: { id: photoIdA }, select: { order: true, galleryId: true } }),
+    prisma.photo.findUnique({ where: { id: photoIdB }, select: { order: true, galleryId: true } }),
+  ]);
+  if (!a || !b || a.galleryId !== galleryId || b.galleryId !== galleryId) return;
 
-  await prisma.$transaction(
-    newOrder.map((p, i) =>
-      prisma.photo.update({ where: { id: p.id }, data: { order: i } }),
-    ),
-  );
+  await prisma.$transaction([
+    prisma.photo.update({ where: { id: photoIdA }, data: { order: b.order } }),
+    prisma.photo.update({ where: { id: photoIdB }, data: { order: a.order } }),
+  ]);
 
   revalidatePath(`/admin/galleries/${galleryId}`);
 }

@@ -75,7 +75,7 @@ export default async function GalleryPage({
       </div>
 
       <div className="px-6 pb-24">
-        <GalleryView photos={gallery.photos} />
+        <GalleryView photos={gallery.photos} layout={gallery.layout} />
       </div>
 
       {tripPoints.length > 0 && (

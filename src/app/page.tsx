@@ -2,37 +2,33 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
+import { slotSizeForIndex } from "@/lib/grid-templates";
 
 export default async function Home() {
-  const [galleries, featuredPhotos] = await Promise.all([
-    prisma.gallery.findMany({
-      where: { privacy: "PUBLIC" },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.photo.findMany({
-      where: {
-        featureLevel: { in: ["PRIMARY", "SECONDARY"] },
-        gallery: { privacy: "PUBLIC" },
+  const galleries = await prisma.gallery.findMany({
+    where: { privacy: "PUBLIC" },
+    orderBy: { createdAt: "desc" },
+    include: {
+      photos: {
+        orderBy: { order: "asc" },
+        select: { id: true, width: true, height: true },
       },
-      select: {
-        id: true,
-        width: true,
-        height: true,
-        featureLevel: true,
-        gallery: { select: { slug: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    }),
-  ]);
+    },
+  });
 
-  const railPhotos = featuredPhotos.map((p) => ({
-    id: p.id,
-    width: p.width,
-    height: p.height,
-    gallerySlug: p.gallery.slug,
-    big: p.featureLevel === "PRIMARY",
-  }));
+  // El raíl muestra las fotos que caen en un hueco "grande" según la
+  // plantilla de su propia galería — no hace falta marcarlas aparte.
+  const railPhotos = galleries.flatMap((gallery) =>
+    gallery.photos
+      .map((photo, i) => ({ photo, slotSize: slotSizeForIndex(gallery.layout, i) }))
+      .filter((p) => p.slotSize === "LARGE")
+      .map(({ photo }) => ({
+        id: photo.id,
+        width: photo.width,
+        height: photo.height,
+        gallerySlug: gallery.slug,
+      })),
+  );
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
@@ -67,7 +63,7 @@ export default async function Home() {
       </div>
 
       <div className="hidden flex-1 justify-center overflow-hidden py-6 lg:flex">
-        <div className="h-[calc(100vh-3rem)] w-full max-w-md px-6">
+        <div className="h-[calc(100vh-3rem)] w-full max-w-xl px-6">
           <FeaturedRail photos={railPhotos} className="h-full" />
         </div>
       </div>
