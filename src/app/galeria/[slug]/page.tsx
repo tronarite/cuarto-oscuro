@@ -4,7 +4,6 @@ import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasGalleryUnlock } from "@/lib/gallery-access";
 import { PasswordGate } from "@/components/PasswordGate";
 import { GalleryView } from "@/components/GalleryView";
-import { TripMapLoader } from "@/components/TripMapLoader";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AmbientTexture } from "@/components/AmbientTexture";
 import { unlockGallery } from "./unlock-actions";
@@ -42,10 +41,6 @@ export default async function GalleryPage({
     });
   }
 
-  const tripPoints = gallery.photos
-    .filter((p) => p.latitude != null && p.longitude != null)
-    .map((p) => ({ id: p.id, lat: p.latitude as number, lng: p.longitude as number }));
-
   // Sin salas ya: usamos el número de fotos como pulso para el
   // controlador de textura ambiental (cuánto "recorrido" tiene la página).
   const roomCount = Math.max(1, Math.ceil(gallery.photos.length / 8));
@@ -77,15 +72,6 @@ export default async function GalleryPage({
       <div className="px-6 pb-24">
         <GalleryView photos={gallery.photos} layout={gallery.layout} />
       </div>
-
-      {tripPoints.length > 0 && (
-        <div className="mx-auto max-w-5xl px-6 pb-24 pt-16">
-          <h2 className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-            Mapa del viaje
-          </h2>
-          <TripMapLoader points={tripPoints} />
-        </div>
-      )}
     </main>
   );
 }

@@ -6,6 +6,7 @@ import { MasonryGrid, type MasonryItem } from "@/components/MasonryGrid";
 import { exifLine, type ExifSource } from "@/lib/exif-format";
 import { seededRandom } from "@/lib/seeded-random";
 import { slotSizeForIndex, type GalleryLayout } from "@/lib/grid-templates";
+import { PresentationMode } from "@/components/PresentationMode";
 
 export interface GalleryPhoto extends ExifSource {
   id: string;
@@ -83,6 +84,7 @@ export function GalleryView({
   layout: GalleryLayout;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [presenting, setPresenting] = useState(false);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
   const ordered: LaidOutPhoto[] = [...photos]
     .sort((a, b) => a.order - b.order)
@@ -90,12 +92,28 @@ export function GalleryView({
 
   return (
     <>
+      {photos.length > 0 && (
+        <div className="mx-auto mb-6 flex max-w-5xl justify-end">
+          <button
+            type="button"
+            onClick={() => setPresenting(true)}
+            className="rounded-full border border-border px-4 py-1.5 text-xs text-muted-foreground transition-all hover:text-foreground active:scale-95"
+          >
+            Modo presentación
+          </button>
+        </div>
+      )}
+
       <div className="mx-auto max-w-5xl">
         <MasonryGrid
           items={ordered}
           renderItem={(photo) => <Tile photo={photo} onOpen={setOpenId} />}
         />
       </div>
+
+      {presenting && (
+        <PresentationMode photos={ordered} onClose={() => setPresenting(false)} />
+      )}
 
       {openPhoto && (
         <div

@@ -43,9 +43,16 @@ export default async function Home() {
             <li key={gallery.id}>
               <Link
                 href={`/galeria/${gallery.slug}`}
-                className="group flex items-center justify-between py-4 text-xl font-medium tracking-tight transition-all duration-300 hover:text-muted-foreground active:scale-[0.98]"
+                className="group flex items-center justify-between py-4 transition-all duration-300 hover:text-muted-foreground active:scale-[0.98]"
               >
-                {gallery.title}
+                <span>
+                  <span className="block text-xl font-medium tracking-tight">
+                    {gallery.title}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {gallery.visitCount} {gallery.visitCount === 1 ? "visita" : "visitas"}
+                  </span>
+                </span>
                 <span className="text-muted-foreground transition-transform duration-300 ease-out group-hover:translate-x-1">
                   →
                 </span>

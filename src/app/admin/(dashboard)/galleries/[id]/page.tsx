@@ -5,7 +5,6 @@ import { GalleryEditor } from "@/components/GalleryEditor";
 import {
   updateGalleryTitle,
   updateGalleryDescription,
-  updateGalleryDates,
   updateGalleryPrivacy,
   updateGalleryPassword,
   updateGalleryLayout,
@@ -20,11 +19,6 @@ import {
 } from "./photo-actions";
 import { PhotoUploadForm } from "@/components/PhotoUploadForm";
 import { PhotoManagerList } from "@/components/PhotoManagerList";
-
-function toDateInputValue(date: Date | null): string {
-  if (!date) return "";
-  return date.toISOString().slice(0, 10);
-}
 
 export default async function EditGalleryPage({
   params,
@@ -68,11 +62,8 @@ export default async function EditGalleryPage({
             description={gallery.description ?? ""}
             privacy={gallery.privacy}
             layout={gallery.layout}
-            tripStart={toDateInputValue(gallery.tripStart)}
-            tripEnd={toDateInputValue(gallery.tripEnd)}
             onTitleChange={updateGalleryTitle.bind(null, gallery.id)}
             onDescriptionChange={updateGalleryDescription.bind(null, gallery.id)}
-            onDatesChange={updateGalleryDates.bind(null, gallery.id)}
             onPrivacyChange={updateGalleryPrivacy.bind(null, gallery.id)}
             onPasswordChange={updateGalleryPassword.bind(null, gallery.id)}
             onLayoutChange={updateGalleryLayout.bind(null, gallery.id)}

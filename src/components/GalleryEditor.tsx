@@ -15,11 +15,8 @@ export interface GalleryEditorProps {
   description: string;
   privacy: Privacy;
   layout: GalleryLayout;
-  tripStart: string;
-  tripEnd: string;
   onTitleChange: (title: string) => Promise<FieldResult>;
   onDescriptionChange: (description: string) => Promise<void>;
-  onDatesChange: (tripStart: string, tripEnd: string) => Promise<void>;
   onPrivacyChange: (privacy: "PUBLIC" | "UNLISTED") => Promise<void>;
   onPasswordChange: (password: string) => Promise<FieldResult>;
   onLayoutChange: (layout: GalleryLayout) => Promise<void>;
@@ -30,11 +27,8 @@ export function GalleryEditor({
   description,
   privacy: initialPrivacy,
   layout: initialLayout,
-  tripStart: initialTripStart,
-  tripEnd: initialTripEnd,
   onTitleChange,
   onDescriptionChange,
-  onDatesChange,
   onPrivacyChange,
   onPasswordChange,
   onLayoutChange,
@@ -46,8 +40,6 @@ export function GalleryEditor({
     initialPrivacy === "PASSWORD",
   );
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [tripStart, setTripStart] = useState(initialTripStart);
-  const [tripEnd, setTripEnd] = useState(initialTripEnd);
 
   async function handleTitleBlur(e: React.FocusEvent<HTMLInputElement>) {
     const result = await onTitleChange(e.target.value);
@@ -83,12 +75,6 @@ export function GalleryEditor({
     await onLayoutChange(next);
   }
 
-  async function handleDatesChange(nextStart: string, nextEnd: string) {
-    setTripStart(nextStart);
-    setTripEnd(nextEnd);
-    await onDatesChange(nextStart, nextEnd);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -108,27 +94,6 @@ export function GalleryEditor({
         onBlur={(e) => onDescriptionChange(e.target.value)}
         className="w-full resize-none rounded-lg border border-transparent bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border"
       />
-
-      <div className="flex gap-3">
-        <label className="flex flex-1 flex-col gap-1">
-          <span className="text-xs text-muted-foreground">Inicio</span>
-          <input
-            type="date"
-            value={tripStart}
-            onChange={(e) => handleDatesChange(e.target.value, tripEnd)}
-            className="rounded-lg border border-border bg-transparent px-2 py-1.5 text-sm outline-none focus:border-muted-foreground"
-          />
-        </label>
-        <label className="flex flex-1 flex-col gap-1">
-          <span className="text-xs text-muted-foreground">Fin</span>
-          <input
-            type="date"
-            value={tripEnd}
-            onChange={(e) => handleDatesChange(tripStart, e.target.value)}
-            className="rounded-lg border border-border bg-transparent px-2 py-1.5 text-sm outline-none focus:border-muted-foreground"
-          />
-        </label>
-      </div>
 
       <div>
         <p className="mb-2 text-xs text-muted-foreground">Privacidad</p>

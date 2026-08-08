@@ -36,12 +36,10 @@ model Settings {
 }
 
 model Gallery {
-  id          String    @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
-  slug        String    @unique
+  slug        String  @unique
   description String?
-  tripStart   DateTime?
-  tripEnd     DateTime?
 
   privacy      Privacy       @default(PUBLIC)
   passwordHash String?

@@ -6,6 +6,12 @@ const ADMIN_COOKIE_NAME = "admin_session";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (pathname.startsWith("/galeria")) {
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", "private, no-store, must-revalidate");
+    return response;
+  }
+
   if (pathname === "/admin/login") {
     return NextResponse.next();
   }
@@ -23,5 +29,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/galeria/:path*"],
 };

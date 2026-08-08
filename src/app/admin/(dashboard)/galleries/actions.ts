@@ -61,21 +61,6 @@ export async function updateGalleryDescription(galleryId: string, description: s
   revalidatePath(`/admin/galleries/${galleryId}`);
 }
 
-export async function updateGalleryDates(
-  galleryId: string,
-  tripStart: string,
-  tripEnd: string,
-) {
-  await prisma.gallery.update({
-    where: { id: galleryId },
-    data: {
-      tripStart: tripStart ? new Date(tripStart) : null,
-      tripEnd: tripEnd ? new Date(tripEnd) : null,
-    },
-  });
-  revalidatePath(`/admin/galleries/${galleryId}`);
-}
-
 export async function updateGalleryLayout(galleryId: string, layout: GalleryLayout) {
   await prisma.gallery.update({ where: { id: galleryId }, data: { layout } });
   revalidatePath(`/admin/galleries/${galleryId}`);
