@@ -61,7 +61,7 @@ export default async function Home() {
       </div>
 
       <div className="hidden flex-1 justify-center overflow-hidden py-6 lg:flex">
-        <div className="h-[calc(100vh-3rem)] w-full max-w-2xl px-6">
+        <div className="h-[calc(100vh-3rem)] w-full max-w-4xl px-6">
           <FeaturedRail photos={railPhotos} className="h-full" />
         </div>
       </div>
