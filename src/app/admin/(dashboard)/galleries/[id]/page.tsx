@@ -16,7 +16,7 @@ import {
   toggleHomeFeatured,
   togglePinned,
   deletePhoto,
-  swapPhotoOrder,
+  reorderPhotos,
 } from "./photo-actions";
 import { PhotoUploadForm } from "@/components/PhotoUploadForm";
 import { PhotoManagerList } from "@/components/PhotoManagerList";
@@ -39,7 +39,7 @@ export default async function EditGalleryPage({
 
   const boundDelete = deleteGallery.bind(null, gallery.id);
   const boundUpload = uploadPhoto.bind(null, gallery.id);
-  const boundSwap = swapPhotoOrder.bind(null, gallery.id);
+  const boundReorder = reorderPhotos.bind(null, gallery.id);
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -98,7 +98,7 @@ export default async function EditGalleryPage({
         <PhotoManagerList
           photos={gallery.photos}
           layout={gallery.layout}
-          onSwap={boundSwap}
+          onReorder={boundReorder}
           onUpdateDescription={updatePhotoDescription}
           onToggleHomeFeatured={toggleHomeFeatured}
           onTogglePinned={togglePinned}

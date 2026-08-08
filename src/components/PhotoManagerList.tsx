@@ -22,7 +22,7 @@ type LaidOutPhoto = PhotoItem & MasonryItem;
 interface PhotoManagerListProps {
   photos: PhotoItem[];
   layout: GalleryLayout;
-  onSwap: (photoIdA: string, photoIdB: string) => Promise<void>;
+  onReorder: (orderedIds: string[]) => Promise<void>;
   onUpdateDescription: (photoId: string, description: string) => Promise<void>;
   onToggleHomeFeatured: (
     photoId: string,
@@ -35,13 +35,14 @@ interface PhotoManagerListProps {
 export function PhotoManagerList({
   photos,
   layout,
-  onSwap,
+  onReorder,
   onUpdateDescription,
   onToggleHomeFeatured,
   onTogglePinned,
   onDelete,
 }: PhotoManagerListProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [homeFeaturedError, setHomeFeaturedError] = useState<string | null>(null);
 
   // Auto-scroll de la ventana mientras se arrastra una foto cerca del
@@ -87,16 +88,31 @@ export function PhotoManagerList({
     slotSize: slotSizeForIndex(layout, i),
   }));
 
+  // Arrastrar inserta la foto en el hueco soltado (como una lista normal),
+  // en vez de solo intercambiar el sitio con la de destino. Las fotos
+  // ancladas no participan: ni se pueden arrastrar ni recibir una.
   function handleDrop(e: React.DragEvent, targetPhoto: LaidOutPhoto) {
     e.preventDefault();
     e.stopPropagation();
-    if (targetPhoto.pinnedPosition != null) {
-      setDraggingId(null);
-      return;
-    }
-    const sourceId = e.dataTransfer.getData("text/plain");
-    if (sourceId && sourceId !== targetPhoto.id) onSwap(sourceId, targetPhoto.id);
+    setDragOverId(null);
     setDraggingId(null);
+    if (targetPhoto.pinnedPosition != null) return;
+
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (!sourceId || sourceId === targetPhoto.id) return;
+
+    const unpinnedIds = ordered
+      .filter((p) => p.pinnedPosition == null)
+      .map((p) => p.id);
+    const fromIndex = unpinnedIds.indexOf(sourceId);
+    if (fromIndex === -1) return;
+
+    const next = [...unpinnedIds];
+    next.splice(fromIndex, 1);
+    const insertAt = next.indexOf(targetPhoto.id);
+    next.splice(insertAt, 0, sourceId);
+
+    onReorder(next);
   }
 
   async function handleTogglePinned(photoId: string, next: boolean) {
@@ -119,19 +135,38 @@ export function PhotoManagerList({
         renderItem={(photo) => {
           const specs = exifLine(photo);
           const pinned = photo.pinnedPosition != null;
+          const isDragging = draggingId === photo.id;
+          const isDropTarget =
+            !pinned && dragOverId === photo.id && draggingId !== null && !isDragging;
           return (
             <div
               draggable={!pinned}
               onDragStart={(e) => {
+                e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.setData("text/plain", photo.id);
                 setDraggingId(photo.id);
               }}
-              onDragEnd={() => setDraggingId(null)}
+              onDragEnd={() => {
+                setDraggingId(null);
+                setDragOverId(null);
+              }}
               onDragOver={(e) => e.preventDefault()}
+              onDragEnter={() => {
+                if (!pinned && draggingId && draggingId !== photo.id) {
+                  setDragOverId(photo.id);
+                }
+              }}
+              onDragLeave={() =>
+                setDragOverId((cur) => (cur === photo.id ? null : cur))
+              }
               onDrop={(e) => handleDrop(e, photo)}
-              className={`group relative block h-full w-full overflow-hidden rounded-xl bg-surface ${
+              className={`group relative block h-full w-full overflow-hidden rounded-xl bg-surface transition-[transform,opacity,box-shadow] duration-150 ${
                 pinned ? "cursor-default ring-2 ring-amber-400" : "cursor-grab active:cursor-grabbing"
-              } ${draggingId === photo.id ? "opacity-40" : ""}`}
+              } ${isDragging ? "scale-95 opacity-40" : ""} ${
+                isDropTarget
+                  ? "scale-[0.98] ring-2 ring-foreground ring-offset-2 ring-offset-background"
+                  : ""
+              }`}
             >
               {photo.thumbPath && (
                 // eslint-disable-next-line @next/next/no-img-element

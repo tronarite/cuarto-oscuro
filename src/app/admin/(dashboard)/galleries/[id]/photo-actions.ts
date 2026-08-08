@@ -207,34 +207,27 @@ export async function deletePhoto(photoId: string) {
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
-// Intercambia la posición de dos fotos (arrastrar una encima de otra):
-// como el tamaño del hueco depende de la posición según la plantilla de
-// la galería, esto es literalmente "cambiar de hueco" a las dos fotos.
-export async function swapPhotoOrder(
-  galleryId: string,
-  photoIdA: string,
-  photoIdB: string,
-) {
-  if (photoIdA === photoIdB) return;
+// Reordena las fotos no ancladas: recibe todos sus ids en el nuevo orden
+// relativo (calculado en el cliente al soltar, como en una lista normal
+// donde arrastrar inserta en el hueco, no solo intercambia dos) y
+// reasigna `order` secuencialmente. Las fotos ancladas ni se incluyen ni
+// se tocan: su posición depende de pinnedPosition, no de este campo.
+export async function reorderPhotos(galleryId: string, orderedIds: string[]) {
+  if (orderedIds.length === 0) return;
 
-  const [a, b] = await Promise.all([
-    prisma.photo.findUnique({
-      where: { id: photoIdA },
-      select: { order: true, galleryId: true, pinnedPosition: true },
-    }),
-    prisma.photo.findUnique({
-      where: { id: photoIdB },
-      select: { order: true, galleryId: true, pinnedPosition: true },
-    }),
-  ]);
-  if (!a || !b || a.galleryId !== galleryId || b.galleryId !== galleryId) return;
-  // Una foto anclada no se mueve arrastrando otra encima (ni al revés).
-  if (a.pinnedPosition != null || b.pinnedPosition != null) return;
+  const siblings = await prisma.photo.findMany({
+    where: { galleryId, id: { in: orderedIds } },
+    select: { id: true, pinnedPosition: true },
+  });
+  const reorderableIds = new Set(
+    siblings.filter((p) => p.pinnedPosition == null).map((p) => p.id),
+  );
 
-  await prisma.$transaction([
-    prisma.photo.update({ where: { id: photoIdA }, data: { order: b.order } }),
-    prisma.photo.update({ where: { id: photoIdB }, data: { order: a.order } }),
-  ]);
+  await prisma.$transaction(
+    orderedIds
+      .filter((id) => reorderableIds.has(id))
+      .map((id, i) => prisma.photo.update({ where: { id }, data: { order: i } })),
+  );
 
   revalidatePath(`/admin/galleries/${galleryId}`);
 }
