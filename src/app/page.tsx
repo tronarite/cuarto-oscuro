@@ -39,30 +39,41 @@ export default async function Home() {
       <div className="flex w-full shrink-0 flex-col border-border px-6 pt-16 pb-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10 lg:pb-0">
         <div className="lg:shrink-0">
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-semibold tracking-tight">
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-4xl">
               {settings.siteTitle}
             </h1>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/sobre-mi"
-                className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Sobre mí
-              </Link>
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
           </div>
           {settings.siteSubtitle && (
             <p className="mt-2 text-lg text-muted-foreground">
               {settings.siteSubtitle}
             </p>
           )}
-          <p className="mt-2 text-sm text-muted-foreground">
-            {totalVisits} {totalVisits === 1 ? "visita" : "visitas"}
-          </p>
+          <div className="mt-2 flex items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              {totalVisits} {totalVisits === 1 ? "visita" : "visitas"}
+            </p>
+            <Link
+              href="/sobre-mi"
+              className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sobre mí
+            </Link>
+          </div>
         </div>
 
-        <ul className="mt-12 divide-y divide-border pb-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
+        {/* Raíl horizontal: solo en móvil/tablet, entre la cabecera y la
+            lista. En escritorio el raíl vertical de la derecha ya cumple
+            este papel. */}
+        <div className="mt-8 h-40 sm:h-52 lg:hidden">
+          <FeaturedRail
+            photos={railPhotos}
+            orientation="horizontal"
+            className="h-full"
+          />
+        </div>
+
+        <ul className="mt-8 divide-y divide-border pb-8 lg:mt-12 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
           {galleries.map((gallery) => (
             <li key={gallery.id}>
               <Link
@@ -88,7 +99,11 @@ export default async function Home() {
 
       <div className="hidden flex-1 justify-center overflow-hidden lg:flex">
         <div className="h-full w-full max-w-4xl px-6">
-          <FeaturedRail photos={railPhotos} className="h-full" />
+          <FeaturedRail
+            photos={railPhotos}
+            orientation="vertical"
+            className="h-full"
+          />
         </div>
       </div>
     </div>

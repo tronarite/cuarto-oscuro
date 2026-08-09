@@ -108,3 +108,8 @@ body {
   from { transform: translateY(0); }
   to { transform: translateY(-50%); }
 }
+
+@keyframes rail-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

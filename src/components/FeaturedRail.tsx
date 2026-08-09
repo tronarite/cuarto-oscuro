@@ -10,15 +10,20 @@ export interface RailPhoto {
   height: number | null;
 }
 
+export type RailOrientation = "vertical" | "horizontal";
+
 // Píxeles por segundo: fija la velocidad de desplazamiento en vez de una
-// duración fija, para que no varíe según cuántas fotos destacadas haya.
+// duración fija, para que no varíe según cuántas fotos destacadas haya
+// (ni según la orientación).
 const SPEED_PX_PER_SECOND = 45;
 
 function RailPhotoCard({
   photo,
+  orientation,
   hidden,
 }: {
   photo: RailPhoto;
+  orientation: RailOrientation;
   hidden?: boolean;
 }) {
   return (
@@ -30,7 +35,9 @@ function RailPhotoCard({
             ? `${photo.width} / ${photo.height}`
             : "4 / 3",
       }}
-      className="pointer-events-auto block w-full shrink-0 overflow-hidden rounded-2xl bg-surface shadow-sm"
+      className={`pointer-events-auto block shrink-0 overflow-hidden rounded-2xl bg-surface shadow-sm ${
+        orientation === "vertical" ? "w-full" : "h-full"
+      }`}
       tabIndex={hidden ? -1 : undefined}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -47,40 +54,49 @@ function RailPhotoCard({
 export function FeaturedRail({
   photos,
   className = "",
+  orientation = "vertical",
 }: {
   photos: RailPhoto[];
   className?: string;
+  orientation?: RailOrientation;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const setRef = useRef<HTMLDivElement>(null);
   const [repeat, setRepeat] = useState(1);
   const [duration, setDuration] = useState(42);
 
+  const vertical = orientation === "vertical";
+
   // El bucle sin costuras necesita que una sola "copia" del contenido
-  // sea al menos tan alta como el hueco visible; si hay pocas fotos
-  // destacadas, se repiten las necesarias para que nunca quede una
-  // franja vacía arriba o abajo mientras se desplaza.
+  // sea al menos tan larga (alta o ancha, según la orientación) como el
+  // hueco visible; si hay pocas fotos destacadas, se repiten las
+  // necesarias para que nunca quede una franja vacía a los lados.
   useLayoutEffect(() => {
     const container = containerRef.current;
     const set = setRef.current;
     if (!container || !set || photos.length === 0) return;
 
     function measure() {
-      const containerHeight = container!.clientHeight;
-      const setHeight = set!.scrollHeight;
-      if (setHeight === 0 || containerHeight === 0) return;
-      const needed = Math.max(1, Math.ceil(containerHeight / setHeight) + 1);
+      const containerSize = vertical
+        ? container!.clientHeight
+        : container!.clientWidth;
+      const setSize = vertical ? set!.scrollHeight : set!.scrollWidth;
+      if (setSize === 0 || containerSize === 0) return;
+      const needed = Math.max(1, Math.ceil(containerSize / setSize) + 1);
       setRepeat(needed);
-      setDuration((needed * setHeight) / SPEED_PX_PER_SECOND);
+      setDuration((needed * setSize) / SPEED_PX_PER_SECOND);
     }
 
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(container);
     return () => ro.disconnect();
-  }, [photos]);
+  }, [photos, vertical]);
 
   if (photos.length === 0) return null;
+
+  const flexDir = vertical ? "flex-col" : "flex-row";
+  const animationName = vertical ? "rail-up" : "rail-left";
 
   return (
     <div
@@ -88,23 +104,24 @@ export function FeaturedRail({
       className={`pointer-events-none overflow-hidden ${className}`}
     >
       <div
-        className="flex flex-col items-center gap-6"
+        className={`flex ${flexDir} items-center gap-6`}
         style={{
-          animation: `rail-up ${duration}s linear infinite`,
+          animation: `${animationName} ${duration}s linear infinite`,
         }}
       >
         {[0, 1].map((copy) => (
-          <div key={copy} className="flex flex-col items-center gap-6">
+          <div key={copy} className={`flex ${flexDir} items-center gap-6`}>
             {Array.from({ length: repeat }).map((_, rep) => (
               <div
                 key={rep}
                 ref={copy === 0 && rep === 0 ? setRef : undefined}
-                className="flex flex-col items-center gap-6"
+                className={`flex ${flexDir} items-center gap-6`}
               >
                 {photos.map((photo) => (
                   <RailPhotoCard
                     key={`${copy}-${rep}-${photo.id}`}
                     photo={photo}
+                    orientation={orientation}
                     hidden={copy === 1}
                   />
                 ))}
