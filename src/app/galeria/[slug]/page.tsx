@@ -58,7 +58,10 @@ export default async function GalleryPage({
     getSettings(),
     prisma.gallery.findMany({
       where: { privacy: "PUBLIC", id: { not: gallery.id } },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
         photos: { take: 1, orderBy: { order: "asc" }, select: { id: true, width: true, height: true } },
       },
     }),

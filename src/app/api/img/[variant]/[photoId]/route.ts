@@ -16,7 +16,11 @@ export async function GET(
 
   const photo = await prisma.photo.findUnique({
     where: { id: photoId },
-    include: { gallery: true },
+    select: {
+      displayPath: true,
+      thumbPath: true,
+      gallery: { select: { id: true, privacy: true } },
+    },
   });
   if (!photo) {
     return NextResponse.json({ error: "No encontrada" }, { status: 404 });

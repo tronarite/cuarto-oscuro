@@ -41,11 +41,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma
+# prisma / sqlite
 /dev.db
+*.db
+*.db-journal
 /src/generated/prisma
 
-# uploads (originales sin marca de agua, nunca se sirven)
+# uploads (fotos originales y procesadas, nunca al repo)
 /uploads
-
-/src/generated/prisma
