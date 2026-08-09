@@ -32,12 +32,32 @@ export async function createGallery(
   if (!title) return { error: "El título es obligatorio." };
 
   const slug = await uniqueSlug(title);
+  const lastGallery = await prisma.gallery.findFirst({
+    orderBy: { order: "desc" },
+    select: { order: true },
+  });
   const gallery = await prisma.gallery.create({
-    data: { title, slug },
+    data: { title, slug, order: (lastGallery?.order ?? -1) + 1 },
   });
 
   revalidatePath("/admin");
   redirect(`/admin/galleries/${gallery.id}`);
+}
+
+// Reordena las galerías (arrastrar en el panel de admin): recibe todos
+// los ids en el nuevo orden y reasigna `order` secuencialmente, igual
+// que reorderPhotos para las fotos dentro de una galería.
+export async function reorderGalleries(orderedIds: string[]) {
+  if (orderedIds.length === 0) return;
+
+  await prisma.$transaction(
+    orderedIds.map((id, i) =>
+      prisma.gallery.update({ where: { id }, data: { order: i } }),
+    ),
+  );
+
+  revalidatePath("/admin");
+  revalidatePath("/");
 }
 
 export async function updateGalleryTitle(

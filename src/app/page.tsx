@@ -9,7 +9,7 @@ export default async function Home() {
     getSettings(),
     prisma.gallery.findMany({
       where: { privacy: "PUBLIC" },
-      orderBy: { createdAt: "desc" },
+      orderBy: { order: "asc" },
     }),
     prisma.photo.findMany({
       where: { homeFeatured: true, gallery: { privacy: "PUBLIC" } },
@@ -35,32 +35,34 @@ export default async function Home() {
   }));
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
-      <div className="w-full shrink-0 border-border px-6 py-16 lg:w-[26rem] lg:border-r lg:px-10">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            {settings.siteTitle}
-          </h1>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/sobre-mi"
-              className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Sobre mí
-            </Link>
-            <ThemeToggle />
+    <div className="flex flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+      <div className="flex w-full shrink-0 flex-col border-border px-6 py-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10">
+        <div className="lg:shrink-0">
+          <div className="flex items-center justify-between">
+            <h1 className="text-4xl font-semibold tracking-tight">
+              {settings.siteTitle}
+            </h1>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/sobre-mi"
+                className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Sobre mí
+              </Link>
+              <ThemeToggle />
+            </div>
           </div>
-        </div>
-        {settings.siteSubtitle && (
-          <p className="mt-2 text-lg text-muted-foreground">
-            {settings.siteSubtitle}
+          {settings.siteSubtitle && (
+            <p className="mt-2 text-lg text-muted-foreground">
+              {settings.siteSubtitle}
+            </p>
+          )}
+          <p className="mt-2 text-sm text-muted-foreground">
+            {totalVisits} {totalVisits === 1 ? "visita" : "visitas"}
           </p>
-        )}
-        <p className="mt-2 text-sm text-muted-foreground">
-          {totalVisits} {totalVisits === 1 ? "visita" : "visitas"}
-        </p>
+        </div>
 
-        <ul className="mt-12 divide-y divide-border">
+        <ul className="mt-12 divide-y divide-border lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-2">
           {galleries.map((gallery) => (
             <li key={gallery.id}>
               <Link

@@ -65,6 +65,10 @@ model Gallery {
 
   visitCount Int @default(0)
 
+  // Orden en el panel de admin y en la lista de la portada (arrastrar
+  // para reordenar). No tiene por qué coincidir con createdAt.
+  order Int @default(0)
+
   photos    Photo[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
