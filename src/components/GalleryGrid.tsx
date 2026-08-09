@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const PRIVACY_LABEL: Record<string, string> = {
@@ -23,10 +23,58 @@ interface GalleryGridProps {
   onReorder: (orderedIds: string[]) => Promise<void>;
 }
 
+function GripIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
+      <circle cx="5" cy="3" r="1.3" />
+      <circle cx="11" cy="3" r="1.3" />
+      <circle cx="5" cy="8" r="1.3" />
+      <circle cx="11" cy="8" r="1.3" />
+      <circle cx="5" cy="13" r="1.3" />
+      <circle cx="11" cy="13" r="1.3" />
+    </svg>
+  );
+}
+
 export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
   const [order, setOrder] = useState(galleries.map((g) => g.id));
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  // Auto-scroll de la ventana mientras se arrastra una galería cerca del
+  // borde superior/inferior, igual que al reordenar fotos dentro de una
+  // galería: permite llevar una tarjeta de arriba del todo hasta abajo
+  // (o al revés) sin soltar.
+  useEffect(() => {
+    if (!draggingId) return;
+
+    const EDGE = 120;
+    const MAX_SPEED = 22;
+    let pointerY = 0;
+    let rafId: number;
+
+    function onDragOver(e: DragEvent) {
+      pointerY = e.clientY;
+    }
+
+    function tick() {
+      const vh = window.innerHeight;
+      if (pointerY > 0 && pointerY < EDGE) {
+        window.scrollBy(0, -MAX_SPEED * ((EDGE - pointerY) / EDGE));
+      } else if (pointerY > vh - EDGE) {
+        window.scrollBy(0, MAX_SPEED * ((pointerY - (vh - EDGE)) / EDGE));
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener("dragover", onDragOver);
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("dragover", onDragOver);
+      cancelAnimationFrame(rafId);
+    };
+  }, [draggingId]);
 
   const byId = new Map(galleries.map((g) => [g.id, g]));
   const ordered = order.map((id) => byId.get(id)).filter((g) => g != null);
@@ -60,16 +108,6 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
         return (
           <div
             key={gallery.id}
-            draggable
-            onDragStart={(e) => {
-              e.dataTransfer.effectAllowed = "move";
-              e.dataTransfer.setData("text/plain", gallery.id);
-              setDraggingId(gallery.id);
-            }}
-            onDragEnd={() => {
-              setDraggingId(null);
-              setDragOverId(null);
-            }}
             onDragOver={(e) => e.preventDefault()}
             onDragEnter={() => {
               if (draggingId && draggingId !== gallery.id) {
@@ -80,7 +118,7 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
               setDragOverId((cur) => (cur === gallery.id ? null : cur))
             }
             onDrop={(e) => handleDrop(e, gallery.id)}
-            className={`cursor-grab overflow-hidden rounded-2xl border border-neutral-200 transition-[transform,opacity,box-shadow] duration-150 active:cursor-grabbing ${
+            className={`relative overflow-hidden rounded-2xl border border-neutral-200 transition-[transform,opacity,box-shadow] duration-150 ${
               isDragging ? "scale-95 opacity-40" : ""
             } ${
               isDropTarget
@@ -88,9 +126,27 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
                 : ""
             }`}
           >
+            {/* Asa de arrastre separada del enlace: así un intento de
+                arrastrar nunca navega a la edición por error. */}
+            <div
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", gallery.id);
+                setDraggingId(gallery.id);
+              }}
+              onDragEnd={() => {
+                setDraggingId(null);
+                setDragOverId(null);
+              }}
+              title="Arrastra para reordenar"
+              className="absolute left-2 top-2 z-10 flex cursor-grab items-center justify-center rounded-full bg-black/50 p-1.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:cursor-grabbing"
+            >
+              <GripIcon />
+            </div>
+
             <Link
               href={`/admin/galleries/${gallery.id}`}
-              draggable={false}
               className="group block transition-all active:scale-[0.98]"
             >
               <div className="aspect-[4/3] w-full overflow-hidden bg-surface">

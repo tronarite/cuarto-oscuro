@@ -19,7 +19,8 @@ export default async function AdminPage() {
           <h1 className="text-2xl font-medium">Panel de administración</h1>
           {galleries.length > 1 && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Arrastra una galería para cambiar su orden en la portada.
+              Arrastra el icono de la esquina de una galería para cambiar
+              su orden en la portada.
             </p>
           )}
         </div>

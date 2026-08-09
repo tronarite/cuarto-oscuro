@@ -62,7 +62,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <ul className="mt-12 divide-y divide-border lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-2">
+        <ul className="mt-12 divide-y divide-border lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
           {galleries.map((gallery) => (
             <li key={gallery.id}>
               <Link
@@ -86,8 +86,8 @@ export default async function Home() {
         </ul>
       </div>
 
-      <div className="hidden flex-1 justify-center overflow-hidden py-6 lg:flex">
-        <div className="h-[calc(100vh-3rem)] w-full max-w-4xl px-6">
+      <div className="hidden flex-1 justify-center overflow-hidden lg:flex">
+        <div className="h-full w-full max-w-4xl px-6">
           <FeaturedRail photos={railPhotos} className="h-full" />
         </div>
       </div>
