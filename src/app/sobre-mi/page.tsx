@@ -24,35 +24,37 @@ export default async function AboutPage() {
           Sobre mí
         </h1>
 
-        {settings.aboutPhotoPath && (
-          <div
-            className="mx-auto mt-10 max-w-md overflow-hidden rounded-2xl bg-surface"
-            style={
-              settings.aboutPhotoWidth && settings.aboutPhotoHeight
-                ? {
-                    aspectRatio: `${settings.aboutPhotoWidth} / ${settings.aboutPhotoHeight}`,
-                  }
-                : undefined
-            }
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/api/img/about"
-              alt=""
-              className="h-full w-full object-contain"
-            />
+        <div className="mt-10 flex flex-col gap-10 md:flex-row md:items-start">
+          <div className="md:flex-1">
+            {settings.aboutText ? (
+              <p className="whitespace-pre-line text-lg leading-relaxed text-muted-foreground">
+                {settings.aboutText}
+              </p>
+            ) : (
+              <p className="text-muted-foreground">Todavía no hay descripción.</p>
+            )}
           </div>
-        )}
 
-        {settings.aboutText ? (
-          <p className="mt-10 whitespace-pre-line text-lg leading-relaxed text-muted-foreground">
-            {settings.aboutText}
-          </p>
-        ) : (
-          <p className="mt-10 text-muted-foreground">
-            Todavía no hay descripción.
-          </p>
-        )}
+          {settings.aboutPhotoPath && (
+            <div
+              className="mx-auto w-full max-w-md shrink-0 overflow-hidden rounded-2xl bg-surface md:mx-0 md:w-80"
+              style={
+                settings.aboutPhotoWidth && settings.aboutPhotoHeight
+                  ? {
+                      aspectRatio: `${settings.aboutPhotoWidth} / ${settings.aboutPhotoHeight}`,
+                    }
+                  : undefined
+              }
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/api/img/about"
+                alt=""
+                className="h-full w-full object-contain"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
