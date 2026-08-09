@@ -36,7 +36,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
-      <div className="flex w-full shrink-0 flex-col border-border px-6 py-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10">
+      <div className="flex w-full shrink-0 flex-col border-border px-6 pt-16 pb-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10 lg:pb-0">
         <div className="lg:shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-4xl font-semibold tracking-tight">
@@ -62,7 +62,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <ul className="mt-12 divide-y divide-border lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
+        <ul className="mt-12 divide-y divide-border pb-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
           {galleries.map((gallery) => (
             <li key={gallery.id}>
               <Link
