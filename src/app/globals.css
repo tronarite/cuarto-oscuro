@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Oculta la barra de scroll visualmente sin quitar el scroll en sí. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --background: #f3f1ec;
   --foreground: #262420;
@@ -100,16 +109,6 @@ body {
   animation: light-sweep 34s linear infinite;
 }
 
-/* Raíl de fotos destacadas en la portada. Duración calculada en JS
-   (FeaturedRail.tsx) según la altura real del contenido, por eso solo
-   queda aquí el keyframe y no una clase con duración fija. */
-
-@keyframes rail-up {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
-}
-
-@keyframes rail-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
+/* El raíl de fotos destacadas de la portada (FeaturedRail.tsx) ya no usa
+   @keyframes: se anima con un bucle de requestAnimationFrame para poder
+   arrastrarlo a mano y que retome el avance solo al soltar. */

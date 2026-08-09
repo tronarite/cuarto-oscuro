@@ -20,6 +20,25 @@ export interface GalleryPhoto extends ExifSource {
 
 type LaidOutPhoto = GalleryPhoto & MasonryItem;
 
+function FullscreenIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+    >
+      <path d="M4 9V4h5" />
+      <path d="M20 9V4h-5" />
+      <path d="M4 15v5h5" />
+      <path d="M20 15v5h-5" />
+    </svg>
+  );
+}
+
 function Tile({
   photo,
   onOpen,
@@ -89,7 +108,44 @@ export function GalleryView({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
+
+  // "Ampliar" es solo CSS (la foto pasa a ocupar toda la pantalla), no
+  // la API de pantalla completa del navegador: esa bloquea el zoom con
+  // los dedos en varios navegadores móviles. El giro a horizontal sí se
+  // intenta con la Screen Orientation API, pero es solo un extra: no
+  // está soportada en todos los navegadores (p.ej. Safari/iOS) y si
+  // falla no pasa nada, la vista ampliada funciona igual.
+  function closeLightbox() {
+    setOpenId(null);
+    setExpanded(false);
+  }
+
+  async function handleExpand() {
+    setExpanded(true);
+    try {
+      const orientation = screen.orientation as
+        | (ScreenOrientation & { lock?: (o: string) => Promise<void> })
+        | undefined;
+      await orientation?.lock?.("landscape");
+    } catch {
+      // Sin soporte: se queda en la vista ampliada igualmente.
+    }
+  }
+
+  function handleCollapse() {
+    setExpanded(false);
+    try {
+      const orientation = screen.orientation as
+        | (ScreenOrientation & { unlock?: () => void })
+        | undefined;
+      orientation?.unlock?.();
+    } catch {
+      // Nada que hacer si no hay soporte.
+    }
+  }
+
   const ordered: LaidOutPhoto[] = applyPinning(photos).map((photo, i) => ({
     ...photo,
     slotSize: slotSizeForIndex(layout, i),
@@ -98,7 +154,7 @@ export function GalleryView({
   return (
     <>
       {photos.length > 0 && (
-        <div className="mx-auto mb-6 flex max-w-5xl justify-end">
+        <div className="mx-auto mb-6 hidden max-w-5xl justify-end sm:flex">
           <button
             type="button"
             onClick={() => setPresenting(true)}
@@ -122,39 +178,71 @@ export function GalleryView({
 
       {openPhoto && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setOpenId(null)}
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-black/80 ${
+            expanded ? "p-0" : "p-4"
+          }`}
+          onClick={closeLightbox}
         >
-          <div
-            className="flex max-h-full max-w-4xl flex-col gap-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/display/${openPhoto.id}`}
-              alt={openPhoto.description ?? ""}
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              className="max-h-[75vh] w-auto select-none rounded-md object-contain"
-            />
-            <div className="text-neutral-200">
-              {openPhoto.description && (
-                <p className="text-base">{openPhoto.description}</p>
-              )}
-              {exifLine(openPhoto).length > 0 && (
-                <p className="mt-1 text-sm text-neutral-400">
-                  {exifLine(openPhoto).join(" · ")}
-                </p>
-              )}
+          {expanded ? (
+            <div className="relative h-full w-full" onClick={(e) => e.stopPropagation()}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/img/display/${openPhoto.id}`}
+                alt={openPhoto.description ?? ""}
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                className="h-full w-full select-none object-contain"
+              />
+              <button
+                type="button"
+                onClick={handleCollapse}
+                className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+              >
+                reducir ✕
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpenId(null)}
-              className="self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90"
+          ) : (
+            <div
+              className="flex max-h-full max-w-4xl flex-col gap-3"
+              onClick={(e) => e.stopPropagation()}
             >
-              cerrar ✕
-            </button>
-          </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/img/display/${openPhoto.id}`}
+                alt={openPhoto.description ?? ""}
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                className="max-h-[75vh] w-auto select-none rounded-md object-contain"
+              />
+              <div className="text-neutral-200">
+                {openPhoto.description && (
+                  <p className="text-base">{openPhoto.description}</p>
+                )}
+                {exifLine(openPhoto).length > 0 && (
+                  <p className="mt-1 text-sm text-neutral-400">
+                    {exifLine(openPhoto).join(" · ")}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={closeLightbox}
+                  className="self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90"
+                >
+                  cerrar ✕
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExpand}
+                  className="flex items-center gap-1.5 self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90 sm:hidden"
+                >
+                  <FullscreenIcon />
+                  pantalla completa
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

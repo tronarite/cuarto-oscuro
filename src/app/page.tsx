@@ -38,11 +38,11 @@ export default async function Home() {
     <div className="flex flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
       <div className="flex w-full shrink-0 flex-col border-border px-6 pt-16 pb-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10 lg:pb-0">
         <div className="lg:shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <h1 className="text-4xl font-semibold tracking-tight sm:text-4xl">
               {settings.siteTitle}
             </h1>
-            <ThemeToggle />
+            <ThemeToggle className="mt-1 shrink-0" />
           </div>
           {settings.siteSubtitle && (
             <p className="mt-2 text-lg text-muted-foreground">
@@ -63,9 +63,10 @@ export default async function Home() {
         </div>
 
         {/* Raíl horizontal: solo en móvil/tablet, entre la cabecera y la
-            lista. En escritorio el raíl vertical de la derecha ya cumple
-            este papel. */}
-        <div className="mt-8 h-40 sm:h-52 lg:hidden">
+            lista. Sale de los márgenes laterales (-mx-6) para llegar al
+            borde de la pantalla, igual que el raíl vertical llega al
+            borde superior/inferior en escritorio. */}
+        <div className="mt-8 -mx-6 h-40 sm:h-52 lg:hidden">
           <FeaturedRail
             photos={railPhotos}
             orientation="horizontal"
@@ -73,7 +74,7 @@ export default async function Home() {
           />
         </div>
 
-        <ul className="mt-8 divide-y divide-border pb-8 lg:mt-12 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
+        <ul className="no-scrollbar mt-8 divide-y divide-border pb-8 lg:mt-12 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
           {galleries.map((gallery) => (
             <li key={gallery.id}>
               <Link
