@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { MasonryGrid, type MasonryItem } from "@/components/MasonryGrid";
 import { exifLine, type ExifSource } from "@/lib/exif-format";
@@ -35,6 +35,22 @@ function FullscreenIcon() {
       <path d="M20 9V4h-5" />
       <path d="M4 15v5h5" />
       <path d="M20 15v5h-5" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-6 w-6"
+    >
+      <path d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
     </svg>
   );
 }
@@ -110,6 +126,12 @@ export function GalleryView({
   const [presenting, setPresenting] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const ordered: LaidOutPhoto[] = applyPinning(photos).map((photo, i) => ({
+    ...photo,
+    slotSize: slotSizeForIndex(layout, i),
+  }));
 
   // "Ampliar" es solo CSS (la foto pasa a ocupar toda la pantalla), no
   // la API de pantalla completa del navegador: esa bloquea el zoom con
@@ -146,10 +168,49 @@ export function GalleryView({
     }
   }
 
-  const ordered: LaidOutPhoto[] = applyPinning(photos).map((photo, i) => ({
-    ...photo,
-    slotSize: slotSizeForIndex(layout, i),
-  }));
+  // Ir a la foto siguiente/anterior dentro del mismo orden del mosaico,
+  // dando la vuelta al llegar a un extremo.
+  function goToOffset(offset: number) {
+    if (ordered.length === 0) return;
+    const currentIndex = ordered.findIndex((p) => p.id === openId);
+    if (currentIndex === -1) return;
+    const nextIndex =
+      (currentIndex + offset + ordered.length) % ordered.length;
+    setOpenId(ordered[nextIndex].id);
+  }
+
+  const goNext = () => goToOffset(1);
+  const goPrev = () => goToOffset(-1);
+
+  useEffect(() => {
+    if (!openPhoto) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowRight") goNext();
+      else if (e.key === "ArrowLeft") goPrev();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openPhoto, openId]);
+
+  const SWIPE_THRESHOLD = 50;
+
+  function handleSwipeStart(e: React.PointerEvent) {
+    swipeStartRef.current = { x: e.clientX, y: e.clientY };
+  }
+
+  function handleSwipeEnd(e: React.PointerEvent) {
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) goPrev();
+      else goNext();
+    }
+  }
 
   return (
     <>
@@ -184,7 +245,12 @@ export function GalleryView({
           onClick={closeLightbox}
         >
           {expanded ? (
-            <div className="relative h-full w-full" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="relative h-full w-full"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={handleSwipeStart}
+              onPointerUp={handleSwipeEnd}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/img/display/${openPhoto.id}`}
@@ -193,6 +259,26 @@ export function GalleryView({
                 onContextMenu={(e) => e.preventDefault()}
                 className="h-full w-full select-none object-contain"
               />
+              {ordered.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    aria-label="Foto anterior"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                  >
+                    <ChevronIcon direction="left" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Foto siguiente"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                  >
+                    <ChevronIcon direction="right" />
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={handleCollapse}
@@ -203,8 +289,10 @@ export function GalleryView({
             </div>
           ) : (
             <div
-              className="flex max-h-full max-w-4xl flex-col gap-3"
+              className="relative flex max-h-full max-w-4xl flex-col gap-3"
               onClick={(e) => e.stopPropagation()}
+              onPointerDown={handleSwipeStart}
+              onPointerUp={handleSwipeEnd}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -214,6 +302,26 @@ export function GalleryView({
                 onContextMenu={(e) => e.preventDefault()}
                 className="max-h-[75vh] w-auto select-none rounded-md object-contain"
               />
+              {ordered.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    aria-label="Foto anterior"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                  >
+                    <ChevronIcon direction="left" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Foto siguiente"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                  >
+                    <ChevronIcon direction="right" />
+                  </button>
+                </>
+              )}
               <div className="text-neutral-200">
                 {openPhoto.description && (
                   <p className="text-base">{openPhoto.description}</p>
