@@ -28,6 +28,17 @@ enum GalleryLayout {
   BALANCED
 }
 
+// Paleta de color de toda la web, la fija el admin en Ajustes — las 4 son
+// variaciones en blanco y negro (sin tintes de color), cada una con su
+// propia versión clara y oscura; el botón de tema sigue alternando entre
+// esas dos dentro del pack elegido.
+enum ColorPack {
+  WARM
+  COOL
+  CONTRAST
+  SOFT
+}
+
 // Fila única con los ajustes globales del sitio (marca de agua, etc.).
 model Settings {
   id               Int     @id @default(1)
@@ -53,6 +64,8 @@ model Settings {
   aboutPhotoPath   String?
   aboutPhotoWidth  Int?
   aboutPhotoHeight Int?
+
+  colorPack ColorPack @default(WARM)
 }
 
 model Gallery {

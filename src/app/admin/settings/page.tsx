@@ -4,12 +4,14 @@ import {
   updateSiteText,
   updateAboutText,
   updateAboutEnabled,
+  updateColorPack,
 } from "@/app/admin/settings-actions";
 import { WatermarkSettingsForm } from "@/components/WatermarkSettingsForm";
 import { ReprocessPhotosButton } from "@/components/ReprocessPhotosButton";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { SiteTextForm } from "@/components/SiteTextForm";
 import { AboutMeForm } from "@/components/AboutMeForm";
+import { ColorPackForm } from "@/components/ColorPackForm";
 
 export default async function AdminSettingsPage() {
   const settings = await getSettings();
@@ -45,6 +47,22 @@ export default async function AdminSettingsPage() {
             initialEnabled={settings.aboutEnabled}
             onTextChange={updateAboutText}
             onEnabledChange={updateAboutEnabled}
+          />
+        </div>
+      </section>
+
+      <section className="mt-10 border-t border-neutral-200 pt-6">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Estilo de color
+        </h2>
+        <p className="mt-1 max-w-md text-sm text-muted-foreground">
+          Se aplica a toda la web, para todo el mundo. El botón de
+          claro/oscuro sigue funcionando dentro del pack elegido.
+        </p>
+        <div className="mt-3">
+          <ColorPackForm
+            initialPack={settings.colorPack}
+            onChange={updateColorPack}
           />
         </div>
       </section>

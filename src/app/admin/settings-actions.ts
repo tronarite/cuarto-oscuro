@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import type { ColorPack } from "@/generated/prisma/enums";
 
 export async function updateWatermarkSettings(
   enabled: boolean,
@@ -26,6 +27,17 @@ export async function updateSiteText(title: string, subtitle: string) {
   });
   revalidatePath("/");
   revalidatePath("/admin/settings");
+}
+
+export async function updateColorPack(pack: ColorPack) {
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { colorPack: pack },
+    create: { id: 1, colorPack: pack },
+  });
+  // El pack se aplica en el <html> del layout raíz: afecta a toda la
+  // web, no solo a esta página de ajustes.
+  revalidatePath("/", "layout");
 }
 
 export async function updateAboutEnabled(enabled: boolean) {

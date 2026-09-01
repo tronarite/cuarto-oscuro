@@ -9,12 +9,45 @@
   display: none;
 }
 
+/* Paletas de color ("packs"), elegidas por el admin en Ajustes — todas
+   en blanco y negro (sin tintes de color), cada una con su propia
+   versión clara y oscura. El pack por defecto (cálido) vive en el :root
+   sin atributo, como antes; los otros tres se activan con
+   [data-pack="…"] en <html> (RootLayout, según Settings.colorPack). El
+   botón de tema (ThemeToggle) sigue alternando [data-theme] dentro del
+   pack activo, igual que siempre. */
+
 :root {
+  /* Cálido — el pack de siempre */
   --background: #f3f1ec;
   --foreground: #262420;
   --muted-foreground: #78756d;
   --border: #ddd9d0;
   --surface: #e5e2da;
+}
+
+:root[data-pack="cool"] {
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --muted-foreground: #71717a;
+  --border: #d4d4d8;
+  --surface: #e4e4e7;
+}
+
+:root[data-pack="contrast"] {
+  --background: #ffffff;
+  --foreground: #000000;
+  --muted-foreground: #595959;
+  --border: #cccccc;
+  --surface: #f0f0f0;
+}
+
+:root[data-pack="soft"] {
+  --background: #eaeaea;
+  --foreground: #3a3a3a;
+  --muted-foreground: #8c8c8c;
+  --border: #d6d6d6;
+  --surface: #e0e0e0;
 }
 
 @theme inline {
@@ -35,6 +68,27 @@
     --border: #38352f;
     --surface: #232019;
   }
+  :root[data-pack="cool"]:not([data-theme="light"]) {
+    --background: #18181b;
+    --foreground: #f4f4f4;
+    --muted-foreground: #a1a1aa;
+    --border: #3f3f46;
+    --surface: #27272a;
+  }
+  :root[data-pack="contrast"]:not([data-theme="light"]) {
+    --background: #000000;
+    --foreground: #ffffff;
+    --muted-foreground: #a6a6a6;
+    --border: #333333;
+    --surface: #141414;
+  }
+  :root[data-pack="soft"]:not([data-theme="light"]) {
+    --background: #1c1c1c;
+    --foreground: #d6d6d6;
+    --muted-foreground: #8f8f8f;
+    --border: #333333;
+    --surface: #262626;
+  }
 }
 
 :root[data-theme="dark"] {
@@ -43,6 +97,27 @@
   --muted-foreground: #9a968c;
   --border: #38352f;
   --surface: #232019;
+}
+:root[data-pack="cool"][data-theme="dark"] {
+  --background: #18181b;
+  --foreground: #f4f4f4;
+  --muted-foreground: #a1a1aa;
+  --border: #3f3f46;
+  --surface: #27272a;
+}
+:root[data-pack="contrast"][data-theme="dark"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --muted-foreground: #a6a6a6;
+  --border: #333333;
+  --surface: #141414;
+}
+:root[data-pack="soft"][data-theme="dark"] {
+  --background: #1c1c1c;
+  --foreground: #d6d6d6;
+  --muted-foreground: #8f8f8f;
+  --border: #333333;
+  --surface: #262626;
 }
 
 html {
