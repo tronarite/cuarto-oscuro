@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getSettings } from "@/lib/settings";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,10 +13,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Galería fotográfica",
-  description: "Galería fotográfica personal",
-};
+// Título/descripción de la pestaña vienen del siteTitle/siteSubtitle que
+// se configuran en Ajustes > Portada, no de un texto fijo: ninguna otra
+// página define su propio `metadata`, así que este es el único sitio
+// donde hace falta tocarlo.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+    title: settings.siteTitle,
+    description: settings.siteSubtitle || "Galería fotográfica personal",
+  };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
