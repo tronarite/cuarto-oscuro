@@ -4,21 +4,13 @@ import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasGalleryUnlock } from "@/lib/gallery-access";
+import { getGallerySuggestions } from "@/lib/gallery-suggestions";
 import { PasswordGate } from "@/components/PasswordGate";
 import { GalleryView } from "@/components/GalleryView";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { GallerySuggestions } from "@/components/GallerySuggestions";
+import { BackToTopButton } from "@/components/BackToTopButton";
 import { unlockGallery } from "./unlock-actions";
-
-// Fisher-Yates: para que las sugerencias de otras galerías salgan en
-// orden distinto cada visita, sin el sesgo de un simple sort aleatorio.
-function shuffle<T>(items: T[]): T[] {
-  const arr = [...items];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
 
 export default async function GalleryPage({
   params,
@@ -53,19 +45,10 @@ export default async function GalleryPage({
     });
   }
 
-  const [settings, otherGalleries] = await Promise.all([
+  const [settings, suggestions] = await Promise.all([
     getSettings(),
-    prisma.gallery.findMany({
-      where: { privacy: "PUBLIC", id: { not: gallery.id } },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        photos: { take: 1, orderBy: { order: "asc" }, select: { id: true, width: true, height: true } },
-      },
-    }),
+    getGallerySuggestions(gallery.id),
   ]);
-  const suggestions = shuffle(otherGalleries).slice(0, 2);
 
   return (
     <main className="relative">
@@ -96,54 +79,9 @@ export default async function GalleryPage({
         <GalleryView photos={gallery.photos} layout={gallery.layout} />
       </div>
 
-      {suggestions.length > 0 && (
-        <div className="mx-auto max-w-5xl px-6 pb-24">
-          <h2 className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-            Puede que también te guste
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {suggestions.map((suggested) => {
-              const cover = suggested.photos[0];
-              return (
-                <Link
-                  key={suggested.id}
-                  href={`/galeria/${suggested.slug}`}
-                  className="group block overflow-hidden rounded-2xl bg-surface"
-                >
-                  <div
-                    className="w-full overflow-hidden"
-                    style={{
-                      aspectRatio:
-                        cover?.width && cover?.height
-                          ? `${cover.width} / ${cover.height}`
-                          : "16 / 9",
-                    }}
-                  >
-                    {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={`/api/img/thumb/${cover.id}`}
-                        alt=""
-                        draggable={false}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full select-none object-contain transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                        Sin fotos
-                      </div>
-                    )}
-                  </div>
-                  <p className="px-4 py-3 text-lg font-medium tracking-tight">
-                    {suggested.title}
-                  </p>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <GallerySuggestions galleries={suggestions} />
+
+      <BackToTopButton />
     </main>
   );
 }

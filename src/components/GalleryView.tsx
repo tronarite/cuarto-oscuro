@@ -138,6 +138,7 @@ export function GalleryView({
     ...photo,
     slotSize: slotSizeForIndex(layout, i),
   }));
+  const currentIndex = openId ? ordered.findIndex((p) => p.id === openId) : -1;
 
   // "Ampliar" es solo CSS (la foto pasa a ocupar toda la pantalla), no
   // la API de pantalla completa del navegador: esa bloquea el zoom con
@@ -292,6 +293,11 @@ export function GalleryView({
               >
                 reducir ✕
               </button>
+              {ordered.length > 1 && currentIndex !== -1 && (
+                <p className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+                  {currentIndex + 1} / {ordered.length}
+                </p>
+              )}
             </div>
           ) : (
             <div
@@ -338,22 +344,29 @@ export function GalleryView({
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={closeLightbox}
-                  className="self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90"
-                >
-                  cerrar ✕
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExpand}
-                  className="flex items-center gap-1.5 self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90 sm:hidden"
-                >
-                  <FullscreenIcon />
-                  pantalla completa
-                </button>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={closeLightbox}
+                    className="self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90"
+                  >
+                    cerrar ✕
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExpand}
+                    className="flex items-center gap-1.5 self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90 sm:hidden"
+                  >
+                    <FullscreenIcon />
+                    pantalla completa
+                  </button>
+                </div>
+                {ordered.length > 1 && currentIndex !== -1 && (
+                  <p className="text-sm text-neutral-500">
+                    {currentIndex + 1} / {ordered.length}
+                  </p>
+                )}
               </div>
             </div>
           )}

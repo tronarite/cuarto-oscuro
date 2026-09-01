@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSettings } from "@/lib/settings";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BackToTopButton } from "@/components/BackToTopButton";
 
 export default async function AboutPage() {
   const [settings, admin] = await Promise.all([getSettings(), isAdminAuthed()]);
@@ -62,6 +63,8 @@ export default async function AboutPage() {
           )}
         </div>
       </div>
+
+      <BackToTopButton />
     </main>
   );
 }

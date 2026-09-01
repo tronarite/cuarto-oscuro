@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
+import { BackToTopButton } from "@/components/BackToTopButton";
 
 export default async function Home() {
   const [settings, galleries, featuredPhotos, visitAggregate] = await Promise.all([
@@ -109,6 +110,8 @@ export default async function Home() {
           />
         </div>
       </div>
+
+      <BackToTopButton />
     </div>
   );
 }
