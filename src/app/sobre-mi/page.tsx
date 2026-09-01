@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSettings } from "@/lib/settings";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BackToTopButton } from "@/components/BackToTopButton";
+import { BackHomeLink } from "@/components/BackHomeLink";
 
 export default async function AboutPage() {
   const [settings, admin] = await Promise.all([getSettings(), isAdminAuthed()]);
@@ -16,12 +16,7 @@ export default async function AboutPage() {
     <main className="relative">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="text-sm font-semibold tracking-tight transition-colors hover:text-accent"
-          >
-            ← {settings.siteTitle}
-          </Link>
+          <BackHomeLink siteTitle={settings.siteTitle} />
           <ThemeToggle />
         </div>
       </header>
