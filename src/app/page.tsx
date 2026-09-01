@@ -64,7 +64,7 @@ export default async function Home() {
             {settings.aboutEnabled && (
               <Link
                 href="/sobre-mi"
-                className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-accent"
               >
                 Sobre mí
               </Link>
@@ -94,7 +94,7 @@ export default async function Home() {
                 <span className="text-xl font-medium tracking-tight">
                   {gallery.title}
                 </span>
-                <span className="text-muted-foreground transition-transform duration-300 ease-out group-hover:translate-x-1">
+                <span className="text-muted-foreground transition-all duration-300 ease-out group-hover:translate-x-1 group-hover:text-accent">
                   →
                 </span>
               </Link>

@@ -56,7 +56,7 @@ export default async function GalleryPage({
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link
             href="/"
-            className="text-sm font-semibold tracking-tight transition-colors hover:text-muted-foreground"
+            className="text-sm font-semibold tracking-tight transition-colors hover:text-accent"
           >
             ← {settings.siteTitle}
           </Link>

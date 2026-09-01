@@ -19,7 +19,7 @@ export default async function NotFound() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link
             href="/"
-            className="text-sm font-semibold tracking-tight transition-colors hover:text-muted-foreground"
+            className="text-sm font-semibold tracking-tight transition-colors hover:text-accent"
           >
             ← {settings.siteTitle}
           </Link>
@@ -40,7 +40,7 @@ export default async function NotFound() {
         </p>
         <Link
           href="/"
-          className="group mt-8 inline-flex items-center gap-2 rounded-full border border-border px-5 py-2 text-sm transition-all hover:border-muted-foreground active:scale-95"
+          className="group mt-8 inline-flex items-center gap-2 rounded-full border border-border px-5 py-2 text-sm transition-all hover:border-accent hover:text-accent active:scale-95"
         >
           Volver al inicio
           <span className="transition-transform duration-300 ease-out group-hover:translate-x-1">

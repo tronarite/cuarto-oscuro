@@ -226,7 +226,7 @@ export function GalleryView({
           <button
             type="button"
             onClick={() => setPresenting(true)}
-            className="rounded-full border border-border px-4 py-1.5 text-xs text-muted-foreground transition-all hover:text-foreground active:scale-95"
+            className="rounded-full border border-border px-4 py-1.5 text-xs text-muted-foreground transition-all hover:border-accent hover:text-accent active:scale-95"
           >
             Modo presentación
           </button>
@@ -272,7 +272,7 @@ export function GalleryView({
                     type="button"
                     onClick={goPrev}
                     aria-label="Foto anterior"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
                   >
                     <ChevronIcon direction="left" />
                   </button>
@@ -280,7 +280,7 @@ export function GalleryView({
                     type="button"
                     onClick={goNext}
                     aria-label="Foto siguiente"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
                   >
                     <ChevronIcon direction="right" />
                   </button>
@@ -289,7 +289,7 @@ export function GalleryView({
               <button
                 type="button"
                 onClick={handleCollapse}
-                className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
               >
                 reducir ✕
               </button>
@@ -320,7 +320,7 @@ export function GalleryView({
                     type="button"
                     onClick={goPrev}
                     aria-label="Foto anterior"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
                   >
                     <ChevronIcon direction="left" />
                   </button>
@@ -328,7 +328,7 @@ export function GalleryView({
                     type="button"
                     onClick={goNext}
                     aria-label="Foto siguiente"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 active:scale-90"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
                   >
                     <ChevronIcon direction="right" />
                   </button>
@@ -349,14 +349,14 @@ export function GalleryView({
                   <button
                     type="button"
                     onClick={closeLightbox}
-                    className="self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90"
+                    className="self-start text-sm text-neutral-400 transition-all hover:text-accent active:scale-90"
                   >
                     cerrar ✕
                   </button>
                   <button
                     type="button"
                     onClick={handleExpand}
-                    className="flex items-center gap-1.5 self-start text-sm text-neutral-400 transition-all hover:text-neutral-200 active:scale-90 sm:hidden"
+                    className="flex items-center gap-1.5 self-start text-sm text-neutral-400 transition-all hover:text-accent active:scale-90 sm:hidden"
                   >
                     <FullscreenIcon />
                     pantalla completa

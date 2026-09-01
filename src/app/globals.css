@@ -24,6 +24,14 @@
   --muted-foreground: #78756d;
   --border: #ddd9d0;
   --surface: #e5e2da;
+
+  /* Acento rosa muy apagado (no el rosa vivo del favicon: aquí solo
+     tiene que insinuarse) — un único color fijo que NO cambia con el
+     pack ni con claro/oscuro, para pequeños detalles interactivos
+     (hover, foco, selección) sobre la base en blanco y negro — no
+     reemplaza los packs, los acompaña. */
+  --accent: #b98a9a;
+  --accent-soft: #f3e6ea;
 }
 
 :root[data-pack="cool"] {
@@ -56,6 +64,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
