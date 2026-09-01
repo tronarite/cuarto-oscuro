@@ -28,6 +28,17 @@ export async function updateSiteText(title: string, subtitle: string) {
   revalidatePath("/admin/settings");
 }
 
+export async function updateAboutEnabled(enabled: boolean) {
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { aboutEnabled: enabled },
+    create: { id: 1, aboutEnabled: enabled },
+  });
+  revalidatePath("/");
+  revalidatePath("/sobre-mi");
+  revalidatePath("/admin/settings");
+}
+
 export async function updateAboutText(text: string) {
   const aboutText = text.trim() || null;
   await prisma.settings.upsert({

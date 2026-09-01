@@ -10,20 +10,34 @@ import {
 interface AboutMeFormProps {
   initialText: string;
   hasPhoto: boolean;
+  initialEnabled: boolean;
   onTextChange: (text: string) => Promise<void>;
+  onEnabledChange: (enabled: boolean) => Promise<void>;
 }
 
 export function AboutMeForm({
   initialText,
   hasPhoto,
+  initialEnabled,
   onTextChange,
+  onEnabledChange,
 }: AboutMeFormProps) {
   const [text, setText] = useState(initialText);
   const [photoState, setPhotoState] = useState<AboutPhotoState>({});
   const [uploading, setUploading] = useState(false);
   const [photoExists, setPhotoExists] = useState(hasPhoto);
   const [cacheBust, setCacheBust] = useState(0);
+  const [enabled, setEnabled] = useState(initialEnabled);
+  const [savingEnabled, setSavingEnabled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleToggleEnabled() {
+    const next = !enabled;
+    setEnabled(next);
+    setSavingEnabled(true);
+    await onEnabledChange(next);
+    setSavingEnabled(false);
+  }
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -49,6 +63,35 @@ export function AboutMeForm({
 
   return (
     <div className="flex max-w-md flex-col gap-4">
+      <button
+        type="button"
+        onClick={handleToggleEnabled}
+        className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] ${
+          enabled ? "border-foreground bg-surface" : "border-border"
+        }`}
+      >
+        <div>
+          <p className="text-sm font-medium">Página Sobre mí</p>
+          <p className="text-xs text-muted-foreground">
+            {enabled
+              ? "Activada — visible desde la portada"
+              : "Desactivada — oculta y no accesible"}
+          </p>
+        </div>
+        <span
+          className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
+            enabled ? "bg-foreground" : "bg-border"
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-background transition-transform ${
+              enabled ? "translate-x-[18px]" : "translate-x-0.5"
+            }`}
+          />
+        </span>
+      </button>
+      {savingEnabled && <p className="text-xs text-muted-foreground">Guardando…</p>}
+
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}

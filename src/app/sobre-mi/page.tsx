@@ -1,9 +1,15 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getSettings } from "@/lib/settings";
+import { isAdminAuthed } from "@/lib/admin-auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default async function AboutPage() {
-  const settings = await getSettings();
+  const [settings, admin] = await Promise.all([getSettings(), isAdminAuthed()]);
+
+  // Desactivada: nadie salvo el admin (que puede querer verla antes de
+  // reactivarla) puede entrar, ni siquiera con el enlace directo.
+  if (!settings.aboutEnabled && !admin) notFound();
 
   return (
     <main className="relative">

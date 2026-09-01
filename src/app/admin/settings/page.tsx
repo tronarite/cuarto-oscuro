@@ -3,6 +3,7 @@ import {
   updateWatermarkSettings,
   updateSiteText,
   updateAboutText,
+  updateAboutEnabled,
 } from "@/app/admin/settings-actions";
 import { WatermarkSettingsForm } from "@/components/WatermarkSettingsForm";
 import { ReprocessPhotosButton } from "@/components/ReprocessPhotosButton";
@@ -41,7 +42,9 @@ export default async function AdminSettingsPage() {
           <AboutMeForm
             initialText={settings.aboutText ?? ""}
             hasPhoto={Boolean(settings.aboutPhotoPath)}
+            initialEnabled={settings.aboutEnabled}
             onTextChange={updateAboutText}
+            onEnabledChange={updateAboutEnabled}
           />
         </div>
       </section>

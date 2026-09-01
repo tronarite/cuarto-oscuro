@@ -46,7 +46,9 @@ model Settings {
 
   // Página "Sobre mí": texto y foto (procesada, sin marca de agua, sin
   // recortar — se guardan también sus dimensiones para poder maquetar
-  // respetando su proporción real).
+  // respetando su proporción real). aboutEnabled controla tanto el botón
+  // de la portada como el acceso directo a /sobre-mi.
+  aboutEnabled     Boolean @default(true)
   aboutText        String?
   aboutPhotoPath   String?
   aboutPhotoWidth  Int?

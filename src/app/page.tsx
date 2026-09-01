@@ -53,12 +53,14 @@ export default async function Home() {
             <p className="text-sm text-muted-foreground">
               {totalVisits} {totalVisits === 1 ? "visita" : "visitas"}
             </p>
-            <Link
-              href="/sobre-mi"
-              className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Sobre mí
-            </Link>
+            {settings.aboutEnabled && (
+              <Link
+                href="/sobre-mi"
+                className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Sobre mí
+              </Link>
+            )}
           </div>
         </div>
 
