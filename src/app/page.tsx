@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
 import { BackToTopButton } from "@/components/BackToTopButton";
+import { FlowerMark } from "@/components/FlowerMark";
 
 // Sin esto, un build de producción deja esta página pre-renderizada de
 // forma estática: el conteo de visitas (y la lista de galerías) se
@@ -47,9 +48,12 @@ export default async function Home() {
       <div className="flex w-full shrink-0 flex-col border-border px-6 pt-16 pb-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10 lg:pb-0">
         <div className="lg:shrink-0">
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-4xl">
-              {settings.siteTitle}
-            </h1>
+            <div className="flex items-center gap-3">
+              <FlowerMark className="h-8 w-8 shrink-0" />
+              <h1 className="text-4xl font-semibold tracking-tight sm:text-4xl">
+                {settings.siteTitle}
+              </h1>
+            </div>
             <ThemeToggle className="mt-1 shrink-0" />
           </div>
           {settings.siteSubtitle && (
