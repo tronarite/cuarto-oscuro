@@ -1,4 +1,4 @@
-# PhotoPortfolio · Virtual Gallery
+# Cuarto Oscuro
 
 A minimalist, self-hosted photo gallery for showcasing personal photography by
 trip or theme — built as a "museum walkthrough": scroll through a gallery and
