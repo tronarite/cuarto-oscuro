@@ -7,7 +7,6 @@ import { hasGalleryUnlock } from "@/lib/gallery-access";
 import { PasswordGate } from "@/components/PasswordGate";
 import { GalleryView } from "@/components/GalleryView";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { AmbientTexture } from "@/components/AmbientTexture";
 import { unlockGallery } from "./unlock-actions";
 
 // Fisher-Yates: para que las sugerencias de otras galerías salgan en
@@ -68,14 +67,8 @@ export default async function GalleryPage({
   ]);
   const suggestions = shuffle(otherGalleries).slice(0, 2);
 
-  // Sin salas ya: usamos el número de fotos como pulso para el
-  // controlador de textura ambiental (cuánto "recorrido" tiene la página).
-  const roomCount = Math.max(1, Math.ceil(gallery.photos.length / 8));
-
   return (
     <main className="relative">
-      <AmbientTexture roomCount={roomCount} />
-
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link
@@ -132,6 +125,8 @@ export default async function GalleryPage({
                         src={`/api/img/thumb/${cover.id}`}
                         alt=""
                         draggable={false}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full select-none object-contain transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (

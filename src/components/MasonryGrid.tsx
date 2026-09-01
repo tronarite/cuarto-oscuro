@@ -125,12 +125,16 @@ export function MasonryGrid<T extends MasonryItem>({
             key={p.id}
             style={{
               position: "absolute",
-              left: p.x,
-              top: p.y,
+              top: 0,
+              left: 0,
               width: p.width,
               height: p.height,
+              // translate en vez de left/top: el navegador puede mover el
+              // recuadro solo con la GPU (composición), sin recalcular el
+              // layout de sus vecinos en cada frame.
+              transform: `translate(${p.x}px, ${p.y}px)`,
               transition:
-                "left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease",
+                "transform 0.3s ease, width 0.3s ease, height 0.3s ease",
             }}
           >
             {renderItem(item)}

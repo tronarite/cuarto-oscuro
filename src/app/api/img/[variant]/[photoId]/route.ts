@@ -49,7 +49,7 @@ export async function GET(
         "Content-Type": "image/webp",
         "Cache-Control": admin
           ? "private, no-store"
-          : "private, max-age=3600",
+          : "private, max-age=86400",
       },
     });
   } catch {

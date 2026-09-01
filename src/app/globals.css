@@ -63,52 +63,6 @@ body {
     sans-serif;
 }
 
-/* Capas de textura ambiental — periodos deliberadamente distintos y no
-   redondos entre sí para que las capas no se sientan sincronizadas. */
-
-.ambient-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 180px 180px;
-  opacity: 0.045;
-  animation: grain-drift 19s steps(6) infinite;
-}
-
-@keyframes grain-drift {
-  0% { background-position: 0 0; }
-  100% { background-position: 180px 220px; }
-}
-
-@keyframes blob-drift-a {
-  0%, 100% { transform: translate(-6%, -4%) scale(1); }
-  33% { transform: translate(4%, 6%) scale(1.08); }
-  66% { transform: translate(-2%, 8%) scale(0.96); }
-}
-
-@keyframes blob-drift-b {
-  0%, 100% { transform: translate(5%, 3%) scale(1); }
-  40% { transform: translate(-6%, -5%) scale(1.05); }
-  75% { transform: translate(3%, -7%) scale(0.94); }
-}
-
-.ambient-blob-a {
-  animation: blob-drift-a 47s ease-in-out infinite;
-}
-
-.ambient-blob-b {
-  animation: blob-drift-b 63s ease-in-out infinite;
-}
-
-@keyframes light-sweep {
-  0%, 70%, 100% { transform: translateY(-30vh); opacity: 0; }
-  82% { opacity: 1; }
-  92% { transform: translateY(120vh); opacity: 0; }
-}
-
-.ambient-light {
-  animation: light-sweep 34s linear infinite;
-}
-
 /* El raíl de fotos destacadas de la portada (FeaturedRail.tsx) ya no usa
    @keyframes: se anima con un bucle de requestAnimationFrame para poder
    arrastrarlo a mano y que retome el avance solo al soltar. */

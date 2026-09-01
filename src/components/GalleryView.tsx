@@ -66,28 +66,32 @@ function Tile({
   const hasCaption = Boolean(photo.description) || specs.length > 0;
 
   // Variación "aleatoria" pero estable por foto (misma semilla = mismo
-  // valor siempre) para que cada foto entre a su aire, no todas en fila.
+  // valor siempre) para que cada foto entre a su aire, no todas en fila
+  // ni con el mismo ritmo: además del delay, la propia duración varía un
+  // poco por foto, como si cada una "llegara" a su paso.
   const rSpin = seededRandom(`${photo.id}-r`);
   const rDrift = seededRandom(`${photo.id}-x`);
   const rDelay = seededRandom(`${photo.id}-d`);
-  const rotate = (rSpin - 0.5) * 7; // -3.5° a 3.5°
-  const x = (rDrift - 0.5) * 28; // -14px a 14px
-  const y = 30 + rDrift * 24; // 30-54px
+  const rDuration = seededRandom(`${photo.id}-t`);
+  const rotate = (rSpin - 0.5) * 5; // -2.5° a 2.5°
+  const x = (rDrift - 0.5) * 20; // -10px a 10px
+  const y = 22 + rDrift * 18; // 22-40px
 
   return (
     <motion.button
       type="button"
       onClick={() => onOpen(photo.id)}
-      initial={{ y, x, rotate, scale: 0.94 }}
-      whileInView={{ y: 0, x: 0, rotate: 0, scale: 1 }}
+      initial={{ opacity: 0, y, x, rotate, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, x: 0, rotate: 0, scale: 1 }}
       whileTap={{ scale: 0.96 }}
-      viewport={{ once: true, amount: 0.35 }}
+      viewport={{ once: true, amount: 0.3 }}
       transition={{
-        type: "spring",
-        stiffness: 110,
-        damping: 14,
-        mass: 0.7,
-        delay: rDelay * 0.2,
+        // Desaceleración tipo "ease-out" suave en vez de un muelle con
+        // rebote: se siente como algo que se posa, no como algo que
+        // salta y oscila igual en cada foto.
+        ease: [0.16, 1, 0.3, 1],
+        duration: 0.55 + rDuration * 0.35,
+        delay: rDelay * 0.25,
       }}
       className="group relative block h-full w-full overflow-hidden rounded-xl bg-surface"
     >
@@ -96,6 +100,8 @@ function Tile({
         src={`/api/img/thumb/${photo.id}`}
         alt={photo.description ?? ""}
         draggable={false}
+        loading="lazy"
+        decoding="async"
         onContextMenu={(e) => e.preventDefault()}
         className="h-full w-full select-none object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
       />
