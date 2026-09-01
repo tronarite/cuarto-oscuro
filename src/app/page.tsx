@@ -5,6 +5,13 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
 import { BackToTopButton } from "@/components/BackToTopButton";
 
+// Sin esto, un build de producción deja esta página pre-renderizada de
+// forma estática: el conteo de visitas (y la lista de galerías) se
+// queda congelado con el valor que tenía en el momento del build y no
+// se entera de las visitas nuevas. force-dynamic obliga a recalcularla
+// en cada petición.
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const [settings, galleries, featuredPhotos, visitAggregate] = await Promise.all([
     getSettings(),
