@@ -20,7 +20,7 @@
 :root {
   /* Cálido — el pack de siempre, con una pizca de rosa mezclada en el
      fondo (a modo de prueba: fácil de subir/bajar o quitar). */
-  --background: #f1ede9;
+  --background: #eee8e5;
   --foreground: #262420;
   --muted-foreground: #78756d;
   --border: #ddd9d0;
@@ -36,7 +36,7 @@
 }
 
 :root[data-pack="cool"] {
-  --background: #f2f0f1;
+  --background: #efeaed;
   --foreground: #18181b;
   --muted-foreground: #71717a;
   --border: #d4d4d8;
@@ -44,7 +44,7 @@
 }
 
 :root[data-pack="contrast"] {
-  --background: #fcfafb;
+  --background: #f9f4f6;
   --foreground: #000000;
   --muted-foreground: #595959;
   --border: #cccccc;
@@ -52,7 +52,7 @@
 }
 
 :root[data-pack="soft"] {
-  --background: #e8e6e7;
+  --background: #e6e1e3;
   --foreground: #3a3a3a;
   --muted-foreground: #8c8c8c;
   --border: #d6d6d6;
@@ -73,28 +73,28 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #1d1b18;
+    --background: #26201f;
     --foreground: #e9e6de;
     --muted-foreground: #9a968c;
     --border: #38352f;
     --surface: #232019;
   }
   :root[data-pack="cool"]:not([data-theme="light"]) {
-    --background: #1e1d20;
+    --background: #262226;
     --foreground: #f4f4f4;
     --muted-foreground: #a1a1aa;
     --border: #3f3f46;
     --surface: #27272a;
   }
   :root[data-pack="contrast"]:not([data-theme="light"]) {
-    --background: #070606;
+    --background: #110c0e;
     --foreground: #ffffff;
     --muted-foreground: #a6a6a6;
     --border: #333333;
     --surface: #141414;
   }
   :root[data-pack="soft"]:not([data-theme="light"]) {
-    --background: #221f21;
+    --background: #2a2627;
     --foreground: #d6d6d6;
     --muted-foreground: #8f8f8f;
     --border: #333333;
@@ -103,28 +103,28 @@
 }
 
 :root[data-theme="dark"] {
-  --background: #1d1b18;
+  --background: #26201f;
   --foreground: #e9e6de;
   --muted-foreground: #9a968c;
   --border: #38352f;
   --surface: #232019;
 }
 :root[data-pack="cool"][data-theme="dark"] {
-  --background: #1e1d20;
+  --background: #262226;
   --foreground: #f4f4f4;
   --muted-foreground: #a1a1aa;
   --border: #3f3f46;
   --surface: #27272a;
 }
 :root[data-pack="contrast"][data-theme="dark"] {
-  --background: #070606;
+  --background: #110c0e;
   --foreground: #ffffff;
   --muted-foreground: #a6a6a6;
   --border: #333333;
   --surface: #141414;
 }
 :root[data-pack="soft"][data-theme="dark"] {
-  --background: #221f21;
+  --background: #2a2627;
   --foreground: #d6d6d6;
   --muted-foreground: #8f8f8f;
   --border: #333333;
