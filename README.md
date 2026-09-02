@@ -36,9 +36,9 @@ home page. The preview mirrors the public page exactly.
 
 ![Admin gallery editor](docs/screenshots/admin-editor.jpg)
 
-**Settings** — editable site title/subtitle, an on/off watermark with custom
-text, a one-click reprocess for already-uploaded photos, and changing the
-admin password.
+**Settings** — editable site title/subtitle, the 4 color packs, an on/off
+watermark with custom text, a one-click reprocess for already-uploaded
+photos, and changing the admin password.
 
 ![Admin settings, part 1](docs/screenshots/settings.jpg)
 ![Admin settings, part 2](docs/screenshots/settings-2.jpg)
