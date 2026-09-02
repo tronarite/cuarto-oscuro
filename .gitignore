@@ -49,3 +49,10 @@ next-env.d.ts
 
 # uploads (fotos originales y procesadas, nunca al repo)
 /uploads
+
+# skills de asistentes de IA (documentación de referencia instalada por
+# herramientas de desarrollo, no forma parte del proyecto)
+/.agents
+/.claude/skills
+/.windsurf
+/skills-lock.json
