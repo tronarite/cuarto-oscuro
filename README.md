@@ -53,8 +53,9 @@ admin password.
   the public page, computed client-side by real photo aspect ratio. Photos
   are never cropped, anywhere.
 - **Photo viewer** with previous/next navigation via on-screen arrows,
-  keyboard (← →, Esc), and touch swipe; a CSS-only "expanded" view for
-  mobile that doesn't block pinch-to-zoom (unlike the native Fullscreen API).
+  keyboard (← →, Esc), and touch swipe, plus a position counter ("3 / 24");
+  a CSS-only "expanded" view for mobile that doesn't block pinch-to-zoom
+  (unlike the native Fullscreen API).
 - **Presentation mode** — a fullscreen, auto-advancing slideshow for a
   gallery (desktop only).
 - **Drag-and-drop photo reordering**, including a "pin" that locks a photo to
@@ -65,6 +66,18 @@ admin password.
   resumes auto-scroll after you let go.
 - **Drag-and-drop gallery reordering** on the home page, from the admin
   dashboard.
+- **Gallery suggestions** — two random public galleries (with a cover photo)
+  shown at the end of every gallery, and on the 404 page, so a broken link
+  never dead-ends.
+- **4 color packs, admin-picked** — Warm, Cool, Contrast and Soft, all
+  black-and-white (no color hues), each with its own light and dark variant;
+  applies site-wide. A single fixed dusty-pink accent color sits on top,
+  independent of the pack, for subtle hover/interactive touches.
+- **Toggleable "About me" page** — enable or disable it from Settings; when
+  off, both the home page link and the page itself (404 for everyone except
+  the logged-in admin) disappear.
+- **Public, site-wide visit counter** on the home page, always rendered
+  fresh (no stale count from a production build's static cache).
 - **EXIF extraction on upload** (camera, lens, aperture, shutter speed, ISO,
   focal length, GPS, capture date) shown as a caption line per photo.
 - **Server-side watermarking** (configurable on/off and custom text) baked
@@ -78,6 +91,9 @@ admin password.
   per-gallery password unlocks.
 - **Responsive**, including a mobile-specific home page layout and a
   touch-friendly admin (auto-scroll while dragging near the screen edge).
+- **Dynamic tab title** — always the site's real title (set in Settings), on
+  every page, plus a custom favicon that doubles as a small home-link logo
+  in the site's own header/portada.
 
 ## Tech stack
 
