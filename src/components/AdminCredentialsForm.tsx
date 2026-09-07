@@ -5,6 +5,7 @@ import {
   updateAdminCredentials,
   type AdminCredentialsState,
 } from "@/app/admin/settings-actions";
+import { useToast } from "@/components/ToastProvider";
 
 export function AdminCredentialsForm({
   initialUsername,
@@ -16,13 +17,16 @@ export function AdminCredentialsForm({
     FormData
   >(updateAdminCredentials, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  const showToast = useToast();
 
   useEffect(() => {
     if (state?.success) {
       // Se reinician las contraseñas, pero no el usuario: al recargar el
       // formulario sigue mostrando el usuario actual, no vacío.
       formRef.current?.reset();
+      showToast("Guardado");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   return (
@@ -68,9 +72,6 @@ export function AdminCredentialsForm({
         className="rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-muted-foreground"
       />
       {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
-      {state?.success && (
-        <p className="text-xs text-muted-foreground">Credenciales actualizadas.</p>
-      )}
       <button
         type="submit"
         disabled={pending}

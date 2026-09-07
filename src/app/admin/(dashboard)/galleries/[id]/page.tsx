@@ -63,6 +63,7 @@ export default async function EditGalleryPage({
             description={gallery.description ?? ""}
             privacy={gallery.privacy}
             layout={gallery.layout}
+            slug={gallery.slug}
             onTitleChange={updateGalleryTitle.bind(null, gallery.id)}
             onDescriptionChange={updateGalleryDescription.bind(null, gallery.id)}
             onPrivacyChange={updateGalleryPrivacy.bind(null, gallery.id)}
@@ -95,15 +96,21 @@ export default async function EditGalleryPage({
         <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
           Vista previa — así se ve en la galería pública
         </p>
-        <PhotoManagerList
-          photos={gallery.photos}
-          layout={gallery.layout}
-          onReorder={boundReorder}
-          onUpdateDescription={updatePhotoDescription}
-          onToggleHomeFeatured={toggleHomeFeatured}
-          onTogglePinned={togglePinned}
-          onDelete={deletePhoto}
-        />
+        {/* Mismo max-w que GalleryView.tsx en la web pública: sin esto,
+            en pantallas anchas este contenedor (sin sidebar restando
+            ancho) queda más ancho que lo que ve cualquier visitante, y
+            la cuadrícula no coincide con la real. */}
+        <div className="mx-auto max-w-[1180px]">
+          <PhotoManagerList
+            photos={gallery.photos}
+            layout={gallery.layout}
+            onReorder={boundReorder}
+            onUpdateDescription={updatePhotoDescription}
+            onToggleHomeFeatured={toggleHomeFeatured}
+            onTogglePinned={togglePinned}
+            onDelete={deletePhoto}
+          />
+        </div>
       </div>
     </div>
   );

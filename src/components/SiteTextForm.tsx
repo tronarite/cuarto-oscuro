@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 
 interface SiteTextFormProps {
   initialTitle: string;
@@ -13,8 +14,14 @@ export function SiteTextForm({
   initialSubtitle,
   onChange,
 }: SiteTextFormProps) {
+  const showToast = useToast();
   const [title, setTitle] = useState(initialTitle);
   const [subtitle, setSubtitle] = useState(initialSubtitle);
+
+  async function handleBlur() {
+    await onChange(title, subtitle);
+    showToast("Guardado");
+  }
 
   return (
     <div className="flex max-w-md flex-col gap-3">
@@ -24,7 +31,7 @@ export function SiteTextForm({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => onChange(title, subtitle)}
+          onBlur={handleBlur}
           className="rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-muted-foreground"
         />
       </label>
@@ -34,7 +41,7 @@ export function SiteTextForm({
           type="text"
           value={subtitle}
           onChange={(e) => setSubtitle(e.target.value)}
-          onBlur={() => onChange(title, subtitle)}
+          onBlur={handleBlur}
           placeholder="Sin subtítulo"
           className="rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-muted-foreground"
         />

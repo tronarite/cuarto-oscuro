@@ -18,13 +18,13 @@
    pack activo, igual que siempre. */
 
 :root {
-  /* Cálido — el pack de siempre, con una pizca de rosa mezclada en el
-     fondo (a modo de prueba: fácil de subir/bajar o quitar). */
-  --background: #eee8e5;
+  /* Cálido — el pack de siempre, con el fondo/superficie/borde
+     desplazados de beige a rosa pálido (mismo brillo, hue distinto). */
+  --background: #f2e6e9;
   --foreground: #262420;
   --muted-foreground: #78756d;
-  --border: #ddd9d0;
-  --surface: #e5e2da;
+  --border: #ddd0d3;
+  --surface: #ece0e3;
 
   /* Acento rosa muy apagado (no el rosa vivo del favicon: aquí solo
      tiene que insinuarse) — un único color fijo que NO cambia con el

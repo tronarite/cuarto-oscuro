@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import type { ColorPack } from "@/generated/prisma/enums";
 
 // Mismos valores que las 4 variantes en blanco y negro de globals.css
@@ -54,6 +55,7 @@ export function ColorPackForm({
   initialPack: ColorPack;
   onChange: (pack: ColorPack) => Promise<void>;
 }) {
+  const showToast = useToast();
   const [pack, setPack] = useState<ColorPack>(initialPack);
   const [saving, setSaving] = useState(false);
 
@@ -63,6 +65,7 @@ export function ColorPackForm({
     setSaving(true);
     await onChange(value);
     setSaving(false);
+    showToast("Guardado");
   }
 
   return (

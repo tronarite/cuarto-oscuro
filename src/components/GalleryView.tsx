@@ -20,6 +20,21 @@ export interface GalleryPhoto extends ExifSource {
 
 type LaidOutPhoto = GalleryPhoto & MasonryItem;
 
+// Cuántas fotos se montan de entrada y cuántas se añaden cada vez que
+// se llega cerca del final: bajar rápido por una galería con decenas de
+// fotos ya no dispara la descarga+decodificación de todas a la vez,
+// solo de las que realmente hace falta ver.
+const INITIAL_VISIBLE = 24;
+const LOAD_MORE_BATCH = 18;
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+const DOUBLE_CLICK_ZOOM = 2.5;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   return (
     <svg
@@ -114,11 +129,44 @@ export function GalleryView({
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const panStartRef = useRef<{
+    x: number;
+    y: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
+
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
   const ordered: LaidOutPhoto[] = applyPinning(photos).map((photo, i) => ({
     ...photo,
     slotSize: slotSizeForIndex(layout, i),
   }));
   const currentIndex = openId ? ordered.findIndex((p) => p.id === openId) : -1;
+
+  // Carga incremental: solo se monta un lote de fotos al principio, y se
+  // amplía al acercarse al final del mosaico ya renderizado. No afecta
+  // al visor: la navegación siguiente/anterior sigue recorriendo
+  // `ordered` completo, tenga o no ya su <img> montada en la cuadrícula.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((count) =>
+            Math.min(count + LOAD_MORE_BATCH, ordered.length),
+          );
+        }
+      },
+      { rootMargin: "600px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ordered.length]);
 
   function closeLightbox() {
     setOpenId(null);
@@ -138,6 +186,17 @@ export function GalleryView({
   const goNext = () => goToOffset(1);
   const goPrev = () => goToOffset(-1);
 
+  // El zoom/paneo es por foto: cambiar de foto (o cerrar) siempre arranca
+  // en 1x centrado. Se ajusta durante el render (no en un efecto aparte)
+  // siguiendo el patrón de React para "resetear estado cuando cambia
+  // otro valor": https://react.dev/learn/you-might-not-need-an-effect
+  const [zoomResetKey, setZoomResetKey] = useState(openId);
+  if (openId !== zoomResetKey) {
+    setZoomResetKey(openId);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }
+
   useEffect(() => {
     if (!openPhoto) return;
     function onKeyDown(e: KeyboardEvent) {
@@ -152,11 +211,46 @@ export function GalleryView({
 
   const SWIPE_THRESHOLD = 50;
 
-  function handleSwipeStart(e: React.PointerEvent) {
-    swipeStartRef.current = { x: e.clientX, y: e.clientY };
+  function toggleZoom() {
+    if (zoom > 1) {
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
+    } else {
+      setZoom(DOUBLE_CLICK_ZOOM);
+    }
   }
 
-  function handleSwipeEnd(e: React.PointerEvent) {
+  function handleWheel(e: React.WheelEvent) {
+    e.preventDefault();
+    const next = clamp(zoom - e.deltaY * 0.0015, MIN_ZOOM, MAX_ZOOM);
+    setZoom(next);
+    if (next === 1) setPan({ x: 0, y: 0 });
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    swipeStartRef.current = { x: e.clientX, y: e.clientY };
+    if (zoom > 1) {
+      panStartRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+    }
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    const start = panStartRef.current;
+    if (!start || zoom <= 1) return;
+    // Se divide por zoom: el translate se aplica en el espacio SIN
+    // escalar (scale() envuelve a translate() en la misma transform),
+    // así que hay que compensar para que el arrastre siga al puntero 1:1.
+    const dx = (e.clientX - start.x) / zoom;
+    const dy = (e.clientY - start.y) / zoom;
+    setPan({ x: start.panX + dx, y: start.panY + dy });
+  }
+
+  function handlePointerUp(e: React.PointerEvent) {
+    if (zoom > 1) {
+      // Con zoom activo, arrastrar solo hace paneo — no cambia de foto.
+      panStartRef.current = null;
+      return;
+    }
     const start = swipeStartRef.current;
     swipeStartRef.current = null;
     if (!start) return;
@@ -184,9 +278,10 @@ export function GalleryView({
 
       <div className="mx-auto max-w-[1180px]">
         <MasonryGrid
-          items={ordered}
+          items={ordered.slice(0, visibleCount)}
           renderItem={(photo) => <Tile photo={photo} onOpen={setOpenId} />}
         />
+        <div ref={sentinelRef} aria-hidden className="h-1" />
       </div>
 
       {presenting && (
@@ -199,18 +294,39 @@ export function GalleryView({
           onClick={closeLightbox}
         >
           <div
-            className="relative h-full w-full"
+            className="relative h-full w-full overflow-hidden"
             onClick={(e) => e.stopPropagation()}
-            onPointerDown={handleSwipeStart}
-            onPointerUp={handleSwipeEnd}
+            onDoubleClick={toggleZoom}
+            onWheel={handleWheel}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
           >
+            {/* Fondo "ambient": eco borroso de la propia foto rellenando
+                las franjas que deja el object-contain cuando la
+                proporción de la foto no coincide con la de la pantalla,
+                en vez de negro plano. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/img/thumb/${openPhoto.id}`}
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-3xl"
+            />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/img/display/${openPhoto.id}`}
               alt={openPhoto.description ?? ""}
               draggable={false}
               onContextMenu={(e) => e.preventDefault()}
-              className="h-full w-full select-none object-contain"
+              style={{
+                transform:
+                  zoom > 1 ? `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)` : undefined,
+              }}
+              className={`relative h-full w-full select-none object-contain transition-transform duration-200 ease-out ${
+                zoom > 1 ? "cursor-grab" : "cursor-zoom-in"
+              }`}
             />
             {ordered.length > 1 && (
               <>

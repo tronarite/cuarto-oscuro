@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 
 interface WatermarkSettingsFormProps {
   initialEnabled: boolean;
@@ -13,6 +14,7 @@ export function WatermarkSettingsForm({
   initialText,
   onChange,
 }: WatermarkSettingsFormProps) {
+  const showToast = useToast();
   const [enabled, setEnabled] = useState(initialEnabled);
   const [text, setText] = useState(initialText);
   const [saving, setSaving] = useState(false);
@@ -23,12 +25,14 @@ export function WatermarkSettingsForm({
     setSaving(true);
     await onChange(next, text);
     setSaving(false);
+    showToast("Guardado");
   }
 
   async function handleTextBlur() {
     setSaving(true);
     await onChange(enabled, text);
     setSaving(false);
+    showToast("Guardado");
   }
 
   return (

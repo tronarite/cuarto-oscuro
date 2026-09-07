@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { getSettings } from "@/lib/settings";
 import { PoweredByBadge } from "@/components/PoweredByBadge";
+import { ToastProvider } from "@/components/ToastProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,6 +33,11 @@ const fraunces = Fraunces({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
+    // Base para que las URLs relativas de imagen en openGraph (las
+    // fotos destacadas, ver page.tsx y galeria/[slug]/page.tsx) se
+    // resuelvan a absolutas — sin esto, next build falla en cuanto
+    // algún generateMetadata use una ruta relativa en openGraph.images.
+    metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
     title: settings.siteTitle,
     description: settings.siteSubtitle || "Galería fotográfica personal",
   };
@@ -61,8 +67,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full flex flex-col">
-        {children}
-        <PoweredByBadge />
+        <ToastProvider>
+          {children}
+          <PoweredByBadge />
+        </ToastProvider>
       </body>
     </html>
   );

@@ -6,6 +6,7 @@ import {
   deleteAboutPhoto,
   type AboutPhotoState,
 } from "@/app/admin/about-actions";
+import { useToast } from "@/components/ToastProvider";
 
 interface AboutMeFormProps {
   initialText: string;
@@ -26,6 +27,7 @@ export function AboutMeForm({
   onEnabledChange,
   onButtonLabelChange,
 }: AboutMeFormProps) {
+  const showToast = useToast();
   const [text, setText] = useState(initialText);
   const [buttonLabel, setButtonLabel] = useState(initialButtonLabel);
   const [photoState, setPhotoState] = useState<AboutPhotoState>({});
@@ -42,6 +44,7 @@ export function AboutMeForm({
     setSavingEnabled(true);
     await onEnabledChange(next);
     setSavingEnabled(false);
+    showToast("Guardado");
   }
 
   async function handleFile(file: File | undefined) {
@@ -103,7 +106,10 @@ export function AboutMeForm({
           type="text"
           value={buttonLabel}
           onChange={(e) => setButtonLabel(e.target.value)}
-          onBlur={() => onButtonLabelChange(buttonLabel)}
+          onBlur={() => {
+            onButtonLabelChange(buttonLabel);
+            showToast("Guardado");
+          }}
           placeholder="Sobre mí"
           className="rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-muted-foreground"
         />
@@ -112,7 +118,10 @@ export function AboutMeForm({
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onBlur={() => onTextChange(text)}
+        onBlur={() => {
+          onTextChange(text);
+          showToast("Guardado");
+        }}
         placeholder="Escribe una breve descripción sobre ti…"
         rows={5}
         className="resize-none rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-muted-foreground"

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
@@ -12,6 +13,32 @@ import { FlowerMark } from "@/components/FlowerMark";
 // se entera de las visitas nuevas. force-dynamic obliga a recalcularla
 // en cada petición.
 export const dynamic = "force-dynamic";
+
+// Al compartir la portada: mismo título/descripción que ya pone
+// layout.tsx (siteTitle/siteSubtitle), con una foto destacada de
+// cualquier galería pública como imagen de vista previa — la misma idea
+// que el raíl de la propia portada, sin recorrer todas las fotos.
+export async function generateMetadata(): Promise<Metadata> {
+  const [settings, cover] = await Promise.all([
+    getSettings(),
+    prisma.photo.findFirst({
+      where: { homeFeatured: true, gallery: { privacy: "PUBLIC" } },
+      select: { id: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  const description = settings.siteSubtitle || "Galería fotográfica personal";
+
+  return {
+    title: settings.siteTitle,
+    description,
+    openGraph: {
+      title: settings.siteTitle,
+      description,
+      images: cover ? [`/api/img/thumb/${cover.id}`] : undefined,
+    },
+  };
+}
 
 export default async function Home() {
   const [settings, galleries, featuredPhotos, visitAggregate] = await Promise.all([

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import type { PhotoCorner } from "@/generated/prisma/enums";
 
 const OPTIONS: { value: PhotoCorner; label: string; hint: string; radius: string }[] = [
@@ -25,6 +26,7 @@ export function PhotoCornerForm({
   initialCorner: PhotoCorner;
   onChange: (corner: PhotoCorner) => Promise<void>;
 }) {
+  const showToast = useToast();
   const [corner, setCorner] = useState<PhotoCorner>(initialCorner);
   const [saving, setSaving] = useState(false);
 
@@ -34,6 +36,7 @@ export function PhotoCornerForm({
     setSaving(true);
     await onChange(value);
     setSaving(false);
+    showToast("Guardado");
   }
 
   return (
