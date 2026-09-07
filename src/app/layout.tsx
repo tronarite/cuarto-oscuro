@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { getSettings } from "@/lib/settings";
 import { PoweredByBadge } from "@/components/PoweredByBadge";
 import "./globals.css";
@@ -12,6 +12,17 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Segunda fuente, solo para titulares (portada, nombre de galería,
+// "Sobre mí"...): una serif cálida y con carácter, para diferenciar la
+// galería del resto de webs del propio dominio (tronarite.net), que son
+// solo Geist — ver clase utilitaria "font-display" en globals.css.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
 });
 
 // Título/descripción de la pestaña vienen del siteTitle/siteSubtitle que
@@ -34,7 +45,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       data-pack={settings.colorPack.toLowerCase()}
       data-photo-corner={settings.photoCorner.toLowerCase()}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

@@ -51,7 +51,7 @@ export default async function Home() {
             <FlowerMark className="h-9 w-9" />
           </Link>
           <div className="mt-3 flex items-start justify-between gap-4">
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-4xl">
               {settings.siteTitle}
             </h1>
             <ThemeToggle className="mt-1 shrink-0" />
@@ -95,7 +95,7 @@ export default async function Home() {
                 href={`/galeria/${gallery.slug}`}
                 className="group flex items-center justify-between py-4 transition-all duration-300 hover:text-muted-foreground active:scale-[0.98]"
               >
-                <span className="text-xl font-medium tracking-tight">
+                <span className="font-display text-xl font-medium tracking-tight">
                   {gallery.title}
                 </span>
                 <span className="text-muted-foreground transition-all duration-300 ease-out group-hover:translate-x-1 group-hover:text-accent">

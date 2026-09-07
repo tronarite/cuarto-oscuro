@@ -77,6 +77,10 @@
   --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Titulares (portada, nombre de galería, "Sobre mí"...): serif cálida
+     con carácter, en contraste con Geist en el resto del texto.
+     Utilidad: font-display. */
+  --font-display: var(--font-fraunces);
 }
 
 @media (prefers-color-scheme: dark) {

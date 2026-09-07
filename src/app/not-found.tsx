@@ -44,7 +44,7 @@ export default async function NotFound() {
         <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
           404
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="font-display mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
           Esta página no existe
         </h1>
         <p className="mx-auto mt-3 max-w-md text-lg text-muted-foreground">

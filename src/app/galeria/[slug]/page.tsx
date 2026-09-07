@@ -60,7 +60,7 @@ export default async function GalleryPage({
       </header>
 
       <div className="mx-auto max-w-5xl px-6 pb-10 pt-16 sm:pb-14 sm:pt-20">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
           {gallery.title}
         </h1>
         {gallery.description && (

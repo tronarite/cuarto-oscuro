@@ -49,7 +49,7 @@ export function GallerySuggestions({
                   </div>
                 )}
               </div>
-              <p className="px-4 py-3 text-lg font-medium tracking-tight transition-colors group-hover:text-accent">
+              <p className="font-display px-4 py-3 text-lg font-medium tracking-tight transition-colors group-hover:text-accent">
                 {suggested.title}
               </p>
             </Link>

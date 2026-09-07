@@ -22,7 +22,7 @@ export default async function AboutPage() {
       </header>
 
       <div className="mx-auto max-w-3xl px-6 pb-24 pt-16">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
           Sobre mí
         </h1>
 
