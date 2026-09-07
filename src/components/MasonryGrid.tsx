@@ -91,6 +91,7 @@ export function MasonryGrid<T extends MasonryItem>({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -100,10 +101,28 @@ export function MasonryGrid<T extends MasonryItem>({
       setContainerWidth(entries[0].contentRect.width);
     });
     observer.observe(el);
-    return () => observer.disconnect();
+
+    setWindowWidth(window.innerWidth);
+    function onResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
-  const columns = containerWidth > 0 ? columnsForWidth(containerWidth) : 3;
+  // El NÚMERO de columnas se decide por el ancho de la ventana, no del
+  // propio contenedor: en el editor de admin este componente vive junto
+  // a un sidebar que le resta ancho (la galería pública no tiene ese
+  // sidebar), así que decidir por el contenedor podía dar menos columnas
+  // ahí que las que ve un visitante real a la misma anchura de ventana —
+  // la "vista previa" no coincidía. El contenedor real sigue marcando el
+  // ancho en píxeles de cada columna (packing de computeLayout), solo el
+  // número de columnas se homogeneiza.
+  const columns = windowWidth > 0 ? columnsForWidth(windowWidth) : 3;
   const { placements, containerHeight } =
     containerWidth > 0
       ? computeLayout(items, columns, containerWidth)
