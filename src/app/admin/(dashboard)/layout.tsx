@@ -8,7 +8,7 @@ export default function AdminDashboardLayout({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+      <header className="flex items-center justify-between border-b border-neutral-200 px-8 py-5">
         <Link href="/admin" className="font-medium">
           Panel de administración
         </Link>

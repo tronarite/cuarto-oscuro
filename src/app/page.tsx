@@ -70,7 +70,7 @@ export default async function Home() {
                 href="/sobre-mi"
                 className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-accent"
               >
-                Sobre mí
+                {settings.aboutButtonLabel}
               </Link>
             )}
           </div>

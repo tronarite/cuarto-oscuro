@@ -33,6 +33,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="es"
       data-pack={settings.colorPack.toLowerCase()}
+      data-photo-corner={settings.photoCorner.toLowerCase()}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >

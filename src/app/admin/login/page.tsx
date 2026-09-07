@@ -11,11 +11,19 @@ export default function AdminLoginPage() {
       <h1 className="text-xl font-medium">Acceso administrador</h1>
       <form action={formAction} className="mt-6 flex flex-col gap-3">
         <input
+          type="text"
+          name="username"
+          placeholder="Usuario"
+          autoFocus
+          autoComplete="username"
+          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+        />
+        <input
           type="password"
           name="password"
           placeholder="Contraseña"
-          autoFocus
           required
+          autoComplete="current-password"
           className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
         />
         {state?.error && (

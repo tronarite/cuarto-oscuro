@@ -9,6 +9,7 @@ export async function loginAdmin(
   _prevState: { error?: string } | undefined,
   formData: FormData,
 ): Promise<{ error?: string }> {
+  const username = String(formData.get("username") ?? "");
   const password = String(formData.get("password") ?? "");
 
   const settings = await prisma.settings.findUnique({ where: { id: 1 } });
@@ -16,11 +17,18 @@ export async function loginAdmin(
     redirect("/admin/setup");
   }
 
-  const valid = password
+  // Se comparan ambos siempre (aunque el usuario ya haya fallado), para
+  // no dar pistas por timing de cuál de los dos campos es el incorrecto.
+  const passwordValid = password
     ? await bcrypt.compare(password, settings.adminPasswordHash)
     : false;
-  if (!valid) {
-    return { error: "Contraseña incorrecta." };
+  // adminUsername null = instalación sin usuario fijado todavía: se
+  // sigue entrando solo con la contraseña, como antes de este cambio.
+  const usernameValid =
+    settings.adminUsername == null || username === settings.adminUsername;
+
+  if (!passwordValid || !usernameValid) {
+    return { error: "Usuario o contraseña incorrectos." };
   }
 
   await createAdminSession();

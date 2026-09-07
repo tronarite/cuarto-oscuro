@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import type { ColorPack } from "@/generated/prisma/enums";
+import type { ColorPack, PhotoCorner } from "@/generated/prisma/enums";
 
 export async function updateWatermarkSettings(
   enabled: boolean,
@@ -62,18 +62,47 @@ export async function updateAboutText(text: string) {
   revalidatePath("/admin/settings");
 }
 
-export interface ChangePasswordState {
+export async function updateAboutButtonLabel(label: string) {
+  const aboutButtonLabel = label.trim() || "Sobre mí";
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { aboutButtonLabel },
+    create: { id: 1, aboutButtonLabel },
+  });
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+}
+
+export async function updatePhotoCorner(corner: PhotoCorner) {
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { photoCorner: corner },
+    create: { id: 1, photoCorner: corner },
+  });
+  // El radio se aplica en el <html> del layout raíz: afecta a toda la
+  // web, no solo a esta página de ajustes.
+  revalidatePath("/", "layout");
+}
+
+export interface AdminCredentialsState {
   error?: string;
   success?: boolean;
 }
 
 const MIN_PASSWORD_LENGTH = 8;
+const MIN_USERNAME_LENGTH = 3;
 
-export async function changeAdminPassword(
-  _prevState: ChangePasswordState | undefined,
+// Usuario y contraseña se cambian juntos en un único formulario. La
+// contraseña actual siempre es obligatoria (para confirmar identidad);
+// el usuario nuevo es opcional (se puede fijar por primera vez o dejar
+// como está), y la contraseña nueva también es opcional — si se dejan
+// vacíos "nueva contraseña"/"repetir", la contraseña no cambia.
+export async function updateAdminCredentials(
+  _prevState: AdminCredentialsState | undefined,
   formData: FormData,
-): Promise<ChangePasswordState> {
+): Promise<AdminCredentialsState> {
   const current = String(formData.get("current") ?? "");
+  const newUsername = String(formData.get("username") ?? "").trim();
   const next = String(formData.get("next") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
 
@@ -86,17 +115,34 @@ export async function changeAdminPassword(
   if (!valid) {
     return { error: "La contraseña actual no es correcta." };
   }
-  if (next.length < MIN_PASSWORD_LENGTH) {
+
+  if (newUsername && newUsername.length < MIN_USERNAME_LENGTH) {
     return {
-      error: `La nueva contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`,
+      error: `El usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres.`,
     };
   }
-  if (next !== confirm) {
-    return { error: "Las contraseñas nuevas no coinciden." };
+
+  const wantsPasswordChange = next.length > 0 || confirm.length > 0;
+  let adminPasswordHash: string | undefined;
+  if (wantsPasswordChange) {
+    if (next.length < MIN_PASSWORD_LENGTH) {
+      return {
+        error: `La nueva contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`,
+      };
+    }
+    if (next !== confirm) {
+      return { error: "Las contraseñas nuevas no coinciden." };
+    }
+    adminPasswordHash = await bcrypt.hash(next, 10);
   }
 
-  const adminPasswordHash = await bcrypt.hash(next, 10);
-  await prisma.settings.update({ where: { id: 1 }, data: { adminPasswordHash } });
+  await prisma.settings.update({
+    where: { id: 1 },
+    data: {
+      ...(adminPasswordHash ? { adminPasswordHash } : {}),
+      ...(newUsername ? { adminUsername: newUsername } : {}),
+    },
+  });
   revalidatePath("/admin/settings");
   return { success: true };
 }

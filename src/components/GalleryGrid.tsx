@@ -100,7 +100,7 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {ordered.map((gallery) => {
         const isDragging = draggingId === gallery.id;
         const isDropTarget =
@@ -118,7 +118,7 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
               setDragOverId((cur) => (cur === gallery.id ? null : cur))
             }
             onDrop={(e) => handleDrop(e, gallery.id)}
-            className={`relative overflow-hidden rounded-2xl border border-neutral-200 transition-[transform,opacity,box-shadow] duration-150 ${
+            className={`relative overflow-hidden rounded-[var(--photo-radius)] border border-neutral-200 transition-[transform,opacity,box-shadow] duration-150 ${
               isDragging ? "scale-95 opacity-40" : ""
             } ${
               isDropTarget

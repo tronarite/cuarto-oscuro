@@ -160,7 +160,7 @@ export function PhotoManagerList({
                 setDragOverId((cur) => (cur === photo.id ? null : cur))
               }
               onDrop={(e) => handleDrop(e, photo)}
-              className={`group relative block h-full w-full overflow-hidden rounded-xl bg-surface transition-[transform,opacity,box-shadow] duration-150 ${
+              className={`group relative block h-full w-full overflow-hidden rounded-[var(--photo-radius)] bg-surface transition-[transform,opacity,box-shadow] duration-150 ${
                 pinned ? "cursor-default ring-2 ring-amber-400" : "cursor-grab active:cursor-grabbing"
               } ${isDragging ? "scale-95 opacity-40" : ""} ${
                 isDropTarget

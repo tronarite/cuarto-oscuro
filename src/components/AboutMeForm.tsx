@@ -11,18 +11,23 @@ interface AboutMeFormProps {
   initialText: string;
   hasPhoto: boolean;
   initialEnabled: boolean;
+  initialButtonLabel: string;
   onTextChange: (text: string) => Promise<void>;
   onEnabledChange: (enabled: boolean) => Promise<void>;
+  onButtonLabelChange: (label: string) => Promise<void>;
 }
 
 export function AboutMeForm({
   initialText,
   hasPhoto,
   initialEnabled,
+  initialButtonLabel,
   onTextChange,
   onEnabledChange,
+  onButtonLabelChange,
 }: AboutMeFormProps) {
   const [text, setText] = useState(initialText);
+  const [buttonLabel, setButtonLabel] = useState(initialButtonLabel);
   const [photoState, setPhotoState] = useState<AboutPhotoState>({});
   const [uploading, setUploading] = useState(false);
   const [photoExists, setPhotoExists] = useState(hasPhoto);
@@ -91,6 +96,18 @@ export function AboutMeForm({
         </span>
       </button>
       {savingEnabled && <p className="text-xs text-muted-foreground">Guardando…</p>}
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm text-muted-foreground">Texto del botón</span>
+        <input
+          type="text"
+          value={buttonLabel}
+          onChange={(e) => setButtonLabel(e.target.value)}
+          onBlur={() => onButtonLabelChange(buttonLabel)}
+          placeholder="Sobre mí"
+          className="rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-muted-foreground"
+        />
+      </label>
 
       <textarea
         value={text}

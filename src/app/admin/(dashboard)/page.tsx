@@ -13,7 +13,7 @@ export default async function AdminPage() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
+    <main className="mx-auto max-w-[1600px] px-8 py-12">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-medium">Panel de administración</h1>

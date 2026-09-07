@@ -43,7 +43,7 @@ export default async function EditGalleryPage({
 
   return (
     <div className="flex flex-col lg:flex-row">
-      <aside className="shrink-0 border-border px-6 py-8 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:w-80 lg:overflow-y-auto lg:border-r lg:px-6">
+      <aside className="shrink-0 border-border px-6 py-8 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:w-96 lg:overflow-y-auto lg:border-r lg:px-8 lg:py-10">
         <div className="flex items-center justify-between">
           <Link
             href={`/galeria/${gallery.slug}`}
@@ -91,7 +91,7 @@ export default async function EditGalleryPage({
         </section>
       </aside>
 
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 px-8 py-10">
         <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
           Vista previa — así se ve en la galería pública
         </p>

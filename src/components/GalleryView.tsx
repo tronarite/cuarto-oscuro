@@ -20,25 +20,6 @@ export interface GalleryPhoto extends ExifSource {
 
 type LaidOutPhoto = GalleryPhoto & MasonryItem;
 
-function FullscreenIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-    >
-      <path d="M4 9V4h5" />
-      <path d="M20 9V4h-5" />
-      <path d="M4 15v5h5" />
-      <path d="M20 15v5h-5" />
-    </svg>
-  );
-}
-
 function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   return (
     <svg
@@ -93,7 +74,7 @@ function Tile({
         duration: 0.55 + rDuration * 0.35,
         delay: rDelay * 0.25,
       }}
-      className="group relative block h-full w-full overflow-hidden rounded-xl bg-surface"
+      className="group relative block h-full w-full overflow-hidden rounded-[var(--photo-radius)] bg-surface"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -130,7 +111,6 @@ export function GalleryView({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -140,39 +120,8 @@ export function GalleryView({
   }));
   const currentIndex = openId ? ordered.findIndex((p) => p.id === openId) : -1;
 
-  // "Ampliar" es solo CSS (la foto pasa a ocupar toda la pantalla), no
-  // la API de pantalla completa del navegador: esa bloquea el zoom con
-  // los dedos en varios navegadores móviles. El giro a horizontal sí se
-  // intenta con la Screen Orientation API, pero es solo un extra: no
-  // está soportada en todos los navegadores (p.ej. Safari/iOS) y si
-  // falla no pasa nada, la vista ampliada funciona igual.
   function closeLightbox() {
     setOpenId(null);
-    setExpanded(false);
-  }
-
-  async function handleExpand() {
-    setExpanded(true);
-    try {
-      const orientation = screen.orientation as
-        | (ScreenOrientation & { lock?: (o: string) => Promise<void> })
-        | undefined;
-      await orientation?.lock?.("landscape");
-    } catch {
-      // Sin soporte: se queda en la vista ampliada igualmente.
-    }
-  }
-
-  function handleCollapse() {
-    setExpanded(false);
-    try {
-      const orientation = screen.orientation as
-        | (ScreenOrientation & { unlock?: () => void })
-        | undefined;
-      orientation?.unlock?.();
-    } catch {
-      // Nada que hacer si no hay soporte.
-    }
   }
 
   // Ir a la foto siguiente/anterior dentro del mismo orden del mosaico,
@@ -222,7 +171,7 @@ export function GalleryView({
   return (
     <>
       {photos.length > 0 && (
-        <div className="mx-auto mb-6 hidden max-w-5xl justify-end sm:flex">
+        <div className="mx-auto mb-6 hidden max-w-[1180px] justify-end sm:flex">
           <button
             type="button"
             onClick={() => setPresenting(true)}
@@ -233,7 +182,7 @@ export function GalleryView({
         </div>
       )}
 
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-[1180px]">
         <MasonryGrid
           items={ordered}
           renderItem={(photo) => <Tile photo={photo} onOpen={setOpenId} />}
@@ -246,130 +195,68 @@ export function GalleryView({
 
       {openPhoto && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-black/80 ${
-            expanded ? "p-0" : "p-4"
-          }`}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           onClick={closeLightbox}
         >
-          {expanded ? (
-            <div
-              className="relative h-full w-full"
-              onClick={(e) => e.stopPropagation()}
-              onPointerDown={handleSwipeStart}
-              onPointerUp={handleSwipeEnd}
+          <div
+            className="relative h-full w-full"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={handleSwipeStart}
+            onPointerUp={handleSwipeEnd}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/img/display/${openPhoto.id}`}
+              alt={openPhoto.description ?? ""}
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              className="h-full w-full select-none object-contain"
+            />
+            {ordered.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  aria-label="Foto anterior"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+                >
+                  <ChevronIcon direction="left" />
+                </button>
+                <button
+                  type="button"
+                  onClick={goNext}
+                  aria-label="Foto siguiente"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+                >
+                  <ChevronIcon direction="right" />
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={closeLightbox}
+              className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/api/img/display/${openPhoto.id}`}
-                alt={openPhoto.description ?? ""}
-                draggable={false}
-                onContextMenu={(e) => e.preventDefault()}
-                className="h-full w-full select-none object-contain"
-              />
-              {ordered.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={goPrev}
-                    aria-label="Foto anterior"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
-                  >
-                    <ChevronIcon direction="left" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goNext}
-                    aria-label="Foto siguiente"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
-                  >
-                    <ChevronIcon direction="right" />
-                  </button>
-                </>
-              )}
-              <button
-                type="button"
-                onClick={handleCollapse}
-                className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
-              >
-                reducir ✕
-              </button>
-              {ordered.length > 1 && currentIndex !== -1 && (
-                <p className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
-                  {currentIndex + 1} / {ordered.length}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div
-              className="relative flex max-h-full max-w-4xl flex-col gap-3"
-              onClick={(e) => e.stopPropagation()}
-              onPointerDown={handleSwipeStart}
-              onPointerUp={handleSwipeEnd}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/api/img/display/${openPhoto.id}`}
-                alt={openPhoto.description ?? ""}
-                draggable={false}
-                onContextMenu={(e) => e.preventDefault()}
-                className="max-h-[75vh] w-auto select-none rounded-md object-contain"
-              />
-              {ordered.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={goPrev}
-                    aria-label="Foto anterior"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
-                  >
-                    <ChevronIcon direction="left" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goNext}
-                    aria-label="Foto siguiente"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
-                  >
-                    <ChevronIcon direction="right" />
-                  </button>
-                </>
-              )}
-              <div className="text-neutral-200">
+              cerrar ✕
+            </button>
+            {ordered.length > 1 && currentIndex !== -1 && (
+              <p className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+                {currentIndex + 1} / {ordered.length}
+              </p>
+            )}
+            {(openPhoto.description || exifLine(openPhoto).length > 0) && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 pt-16 sm:p-6 sm:pt-24">
                 {openPhoto.description && (
-                  <p className="text-base">{openPhoto.description}</p>
+                  <p className="text-base text-white">{openPhoto.description}</p>
                 )}
                 {exifLine(openPhoto).length > 0 && (
-                  <p className="mt-1 text-sm text-neutral-400">
+                  <p className="mt-1 text-sm text-white/70">
                     {exifLine(openPhoto).join(" · ")}
                   </p>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={closeLightbox}
-                    className="self-start text-sm text-neutral-400 transition-all hover:text-accent active:scale-90"
-                  >
-                    cerrar ✕
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleExpand}
-                    className="flex items-center gap-1.5 self-start text-sm text-neutral-400 transition-all hover:text-accent active:scale-90 sm:hidden"
-                  >
-                    <FullscreenIcon />
-                    pantalla completa
-                  </button>
-                </div>
-                {ordered.length > 1 && currentIndex !== -1 && (
-                  <p className="text-sm text-neutral-500">
-                    {currentIndex + 1} / {ordered.length}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </>

@@ -5,7 +5,13 @@ import sharp from "sharp";
 // huecos grandes del mosaico (hasta ~900px de ancho) y en pantallas de
 // alta densidad, así que se prioriza la fidelidad sobre el peso.
 const DISPLAY_MAX_EDGE = 3200;
-const THUMB_MAX_EDGE = 1800;
+// Bajado de 1800 a 1200: todas las fotos de una galería generaban su
+// miniatura a 1800px sin importar el tamaño real de su hueco (la mayoría
+// son SMALL/MEDIUM, no el hueco LARGE de ~900px al que estaba pensado
+// esto), y sin srcset el navegador siempre descarga el archivo entero.
+// Eso es lo que causaba el lag al bajar rápido por una galería mientras
+// carga: varias imágenes de ~1800px decodificándose de golpe.
+const THUMB_MAX_EDGE = 1200;
 
 export interface WatermarkOptions {
   enabled: boolean;
@@ -85,5 +91,5 @@ export async function generateThumbImage(
   input: Buffer,
   watermark: WatermarkOptions,
 ): Promise<WatermarkedImage> {
-  return toWatermarkedWebp(input, THUMB_MAX_EDGE, 85, watermark);
+  return toWatermarkedWebp(input, THUMB_MAX_EDGE, 80, watermark);
 }

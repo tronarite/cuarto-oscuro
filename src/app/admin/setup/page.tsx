@@ -15,12 +15,22 @@ export default function AdminSetupPage() {
       </p>
       <form action={formAction} className="mt-6 flex flex-col gap-3">
         <input
+          type="text"
+          name="username"
+          placeholder="Usuario (mínimo 3 caracteres)"
+          autoFocus
+          required
+          minLength={3}
+          autoComplete="username"
+          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+        />
+        <input
           type="password"
           name="password"
           placeholder="Contraseña (mínimo 8 caracteres)"
-          autoFocus
           required
           minLength={8}
+          autoComplete="new-password"
           className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
         />
         <input

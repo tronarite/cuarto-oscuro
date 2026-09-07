@@ -37,7 +37,7 @@ function RailPhotoCard({
             ? `${photo.width} / ${photo.height}`
             : "4 / 3",
       }}
-      className={`block shrink-0 select-none overflow-hidden rounded-2xl bg-surface shadow-sm ${
+      className={`block shrink-0 select-none overflow-hidden rounded-[var(--photo-radius)] bg-surface shadow-sm ${
         orientation === "vertical" ? "w-full" : "h-full"
       }`}
       tabIndex={hidden ? -1 : undefined}

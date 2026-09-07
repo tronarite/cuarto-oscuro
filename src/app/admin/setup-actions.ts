@@ -10,17 +10,24 @@ export interface SetupState {
 }
 
 const MIN_PASSWORD_LENGTH = 8;
+const MIN_USERNAME_LENGTH = 3;
 
-// Crea la contraseña de administrador la primera vez que se visita el
-// panel (proxy.ts manda aquí mientras Settings.adminPasswordHash sea
-// null). A partir de aquí el acceso funciona como un login normal.
+// Crea el usuario y la contraseña de administrador la primera vez que se
+// visita el panel (proxy.ts manda aquí mientras Settings.adminPasswordHash
+// sea null). A partir de aquí el acceso funciona como un login normal.
 export async function setupAdminPassword(
   _prevState: SetupState | undefined,
   formData: FormData,
 ): Promise<SetupState> {
+  const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
 
+  if (username.length < MIN_USERNAME_LENGTH) {
+    return {
+      error: `El usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres.`,
+    };
+  }
   if (password.length < MIN_PASSWORD_LENGTH) {
     return {
       error: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`,
@@ -42,7 +49,7 @@ export async function setupAdminPassword(
   const adminPasswordHash = await bcrypt.hash(password, 10);
   await prisma.settings.update({
     where: { id: 1 },
-    data: { adminPasswordHash },
+    data: { adminPasswordHash, adminUsername: username },
   });
 
   await createAdminSession();

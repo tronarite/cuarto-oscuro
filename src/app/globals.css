@@ -33,6 +33,14 @@
      reemplaza los packs, los acompaña. */
   --accent: #b98a9a;
   --accent-soft: #f3e6ea;
+
+  /* Esquina de las miniaturas de fotos en toda la web, elegida por el
+     admin en Ajustes — independiente de pack/tema. */
+  --photo-radius: 0px;
+}
+
+:root[data-photo-corner="rounded"] {
+  --photo-radius: 1rem;
 }
 
 :root[data-pack="cool"] {

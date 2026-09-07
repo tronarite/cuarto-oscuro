@@ -39,6 +39,14 @@ enum ColorPack {
   SOFT
 }
 
+// Estilo de esquina de las miniaturas de fotos en toda la web, lo fija
+// el admin en Ajustes — SQUARE (por defecto) recorta a esquina viva,
+// ROUNDED redondea. Se aplica vía [data-photo-corner] en <html>.
+enum PhotoCorner {
+  ROUNDED
+  SQUARE
+}
+
 // Fila única con los ajustes globales del sitio (marca de agua, etc.).
 model Settings {
   id               Int     @id @default(1)
@@ -50,6 +58,12 @@ model Settings {
   // vez que se visita el sitio, en vez de venir fija por variable de
   // entorno.
   adminPasswordHash String?
+
+  // Usuario del panel de administración, junto a la contraseña. null =
+  // instalación todavía sin usuario fijado: loginAdmin sigue aceptando
+  // solo la contraseña hasta que se rellene una vez desde Ajustes (ver
+  // loginAdmin en admin/actions.ts).
+  adminUsername String?
 
   // Título y subtítulo editables de la portada.
   siteTitle    String  @default("Galería fotográfica")
@@ -64,8 +78,12 @@ model Settings {
   aboutPhotoPath   String?
   aboutPhotoWidth  Int?
   aboutPhotoHeight Int?
+  // Texto del botón/enlace de la portada hacia "Sobre mí" (el título de
+  // la propia página se queda fijo, esto es solo la etiqueta del botón).
+  aboutButtonLabel String @default("Sobre mí")
 
-  colorPack ColorPack @default(WARM)
+  colorPack   ColorPack   @default(WARM)
+  photoCorner PhotoCorner @default(SQUARE)
 }
 
 model Gallery {

@@ -39,7 +39,7 @@ export default async function AboutPage() {
 
           {settings.aboutPhotoPath && (
             <div
-              className="mx-auto w-full max-w-md shrink-0 overflow-hidden rounded-2xl bg-surface md:mx-0 md:w-80"
+              className="mx-auto w-full max-w-md shrink-0 overflow-hidden rounded-[var(--photo-radius)] bg-surface md:mx-0 md:w-80"
               style={
                 settings.aboutPhotoWidth && settings.aboutPhotoHeight
                   ? {

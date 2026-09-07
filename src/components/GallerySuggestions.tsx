@@ -22,7 +22,7 @@ export function GallerySuggestions({
             <Link
               key={suggested.id}
               href={`/galeria/${suggested.slug}`}
-              className="group block overflow-hidden rounded-2xl bg-surface"
+              className="group block overflow-hidden rounded-[var(--photo-radius)] bg-surface"
             >
               <div
                 className="w-full overflow-hidden"
