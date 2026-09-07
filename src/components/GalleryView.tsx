@@ -102,64 +102,6 @@ function Tile({
   );
 }
 
-// Primera foto de la galería a tamaño grande, a modo de bienvenida, con
-// las siguientes asomando cortadas al borde derecho (fila con scroll
-// horizontal + snap): así se nota desde el primer segundo que hay más
-// fotos debajo, sin quitarle protagonismo al mosaico principal.
-function HeroRow({
-  photos,
-  onOpen,
-}: {
-  photos: LaidOutPhoto[];
-  onOpen: (id: string) => void;
-}) {
-  if (photos.length === 0) return null;
-  const [hero, ...rest] = photos;
-
-  return (
-    <div className="relative mb-10 sm:mb-14">
-      <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
-        <button
-          type="button"
-          onClick={() => onOpen(hero.id)}
-          className="h-[42vh] max-h-[520px] min-h-[280px] w-[82%] shrink-0 snap-start overflow-hidden rounded-[var(--photo-radius)] bg-surface transition-opacity hover:opacity-90 sm:w-[62%]"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/api/img/thumb/${hero.id}`}
-            alt={hero.description ?? ""}
-            draggable={false}
-            loading="eager"
-            className="h-full w-full select-none object-contain"
-          />
-        </button>
-        {rest.map((photo) => (
-          <button
-            key={photo.id}
-            type="button"
-            onClick={() => onOpen(photo.id)}
-            className="h-[42vh] max-h-[520px] min-h-[280px] w-[42%] shrink-0 snap-start overflow-hidden rounded-[var(--photo-radius)] bg-surface transition-opacity hover:opacity-90 sm:w-[230px]"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/thumb/${photo.id}`}
-              alt={photo.description ?? ""}
-              draggable={false}
-              loading="lazy"
-              className="h-full w-full select-none object-contain"
-            />
-          </button>
-        ))}
-      </div>
-      {/* Degradado sobre el borde derecho: insinúa que hay más aunque no
-          se vea/use la barra de scroll (trackpad, barra oculta por el SO). */}
-      {rest.length > 0 && (
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent sm:w-24" />
-      )}
-    </div>
-  );
-}
-
 export function GalleryView({
   photos,
   layout,
@@ -241,7 +183,6 @@ export function GalleryView({
       )}
 
       <div className="mx-auto max-w-[1180px]">
-        <HeroRow photos={ordered.slice(0, 5)} onOpen={setOpenId} />
         <MasonryGrid
           items={ordered}
           renderItem={(photo) => <Tile photo={photo} onOpen={setOpenId} />}
