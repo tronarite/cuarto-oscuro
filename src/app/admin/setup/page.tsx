@@ -9,7 +9,7 @@ export default function AdminSetupPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
       <h1 className="text-xl font-medium">Configura el panel de administración</h1>
-      <p className="mt-2 text-sm text-neutral-500">
+      <p className="mt-2 text-sm text-muted-foreground">
         Es la primera vez que se abre. Elige la contraseña con la que
         entrarás a partir de ahora.
       </p>
@@ -22,7 +22,7 @@ export default function AdminSetupPage() {
           required
           minLength={3}
           autoComplete="username"
-          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+          className="rounded-full border border-border bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-muted-foreground"
         />
         <input
           type="password"
@@ -31,7 +31,7 @@ export default function AdminSetupPage() {
           required
           minLength={8}
           autoComplete="new-password"
-          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+          className="rounded-full border border-border bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-muted-foreground"
         />
         <input
           type="password"
@@ -39,13 +39,13 @@ export default function AdminSetupPage() {
           placeholder="Repite la contraseña"
           required
           minLength={8}
-          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+          className="rounded-full border border-border bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-muted-foreground"
         />
         {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-all active:scale-95 disabled:opacity-50"
+          className="rounded-full bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-all active:scale-95 disabled:opacity-50"
         >
           {pending ? "Guardando…" : "Crear contraseña"}
         </button>

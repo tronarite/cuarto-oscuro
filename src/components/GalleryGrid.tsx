@@ -118,7 +118,7 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
               setDragOverId((cur) => (cur === gallery.id ? null : cur))
             }
             onDrop={(e) => handleDrop(e, gallery.id)}
-            className={`relative overflow-hidden rounded-[var(--photo-radius)] border border-neutral-200 transition-[transform,opacity,box-shadow] duration-150 ${
+            className={`relative overflow-hidden rounded-[var(--photo-radius)] border border-border transition-[transform,opacity,box-shadow] duration-150 ${
               isDragging ? "scale-95 opacity-40" : ""
             } ${
               isDropTarget
@@ -166,7 +166,7 @@ export function GalleryGrid({ galleries, onReorder }: GalleryGridProps) {
               </div>
               <div className="px-3 py-2.5">
                 <p className="truncate font-medium">{gallery.title}</p>
-                <p className="mt-0.5 truncate text-xs text-neutral-500">
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {PRIVACY_LABEL[gallery.privacy]} · {gallery._count.photos} fotos ·{" "}
                   {gallery.visitCount} visitas
                 </p>

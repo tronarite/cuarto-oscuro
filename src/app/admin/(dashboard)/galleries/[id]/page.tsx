@@ -48,11 +48,11 @@ export default async function EditGalleryPage({
           <Link
             href={`/galeria/${gallery.slug}`}
             target="_blank"
-            className="text-xs text-neutral-500 underline"
+            className="text-xs text-muted-foreground underline"
           >
             Ver galería pública →
           </Link>
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-muted-foreground">
             {gallery.visitCount} visitas
           </span>
         </div>
@@ -78,7 +78,7 @@ export default async function EditGalleryPage({
           </div>
         </section>
 
-        <section className="mt-8 border-t border-neutral-200 pt-4">
+        <section className="mt-8 border-t border-border pt-4">
           <h2 className="text-sm font-medium text-red-700">Zona peligrosa</h2>
           <form action={boundDelete} className="mt-2">
             <button
@@ -91,7 +91,7 @@ export default async function EditGalleryPage({
         </section>
       </aside>
 
-      <div className="flex-1 px-8 py-10">
+      <div className="flex-1 px-6 py-8 lg:px-8 lg:py-10">
         <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
           Vista previa — así se ve en la galería pública
         </p>

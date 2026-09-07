@@ -26,7 +26,7 @@ export default async function AdminPage() {
         </div>
         <Link
           href="/admin/galleries/new"
-          className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition-all active:scale-95"
+          className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all active:scale-95"
         >
           Nueva galería
         </Link>

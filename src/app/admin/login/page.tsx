@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
           placeholder="Usuario"
           autoFocus
           autoComplete="username"
-          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+          className="rounded-full border border-border bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-muted-foreground"
         />
         <input
           type="password"
@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
           placeholder="Contraseña"
           required
           autoComplete="current-password"
-          className="rounded-full border border-neutral-300 bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-neutral-500"
+          className="rounded-full border border-border bg-transparent px-4 py-2.5 outline-none transition-colors focus:border-muted-foreground"
         />
         {state?.error && (
           <p className="text-sm text-red-600">{state.error}</p>
@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-all active:scale-95 disabled:opacity-50"
+          className="rounded-full bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-all active:scale-95 disabled:opacity-50"
         >
           {pending ? "Entrando…" : "Entrar"}
         </button>

@@ -26,7 +26,7 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-4 border-t border-neutral-200 py-8 first:border-t-0 first:pt-0 md:grid-cols-[240px_1fr] md:gap-8">
+    <section className="grid gap-4 border-t border-border py-8 first:border-t-0 first:pt-0 md:grid-cols-[240px_1fr] md:gap-8">
       <div>
         <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
         {description && (
