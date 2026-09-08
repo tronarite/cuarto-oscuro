@@ -84,6 +84,14 @@ model Settings {
 
   colorPack   ColorPack   @default(WARM)
   photoCorner PhotoCorner @default(SQUARE)
+
+  // BETA: al subir una foto, se manda a la API de Google Cloud Vision
+  // (Web Detection — el mismo motor que usa images.google.com para
+  // "buscar con esta imagen") para intentar identificarla; si hay un
+  // resultado claro, se usa como pie de foto inicial. Necesita
+  // GOOGLE_VISION_API_KEY en el entorno — sin esa variable, el
+  // interruptor no hace nada aunque esté activado (ver src/lib/vision.ts).
+  autoCaptionEnabled Boolean @default(false)
 }
 
 model Gallery {

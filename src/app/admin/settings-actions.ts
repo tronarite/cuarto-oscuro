@@ -17,6 +17,18 @@ export async function updateWatermarkSettings(
   revalidatePath("/admin/settings");
 }
 
+// BETA: ver src/lib/vision.ts. El interruptor se puede activar sin la
+// variable de entorno GOOGLE_VISION_API_KEY configurada — simplemente
+// no hará nada al subir fotos hasta que se añada.
+export async function updateAutoCaption(enabled: boolean) {
+  await prisma.settings.upsert({
+    where: { id: 1 },
+    update: { autoCaptionEnabled: enabled },
+    create: { id: 1, autoCaptionEnabled: enabled },
+  });
+  revalidatePath("/admin/settings");
+}
+
 export async function updateSiteText(title: string, subtitle: string) {
   const siteTitle = title.trim() || "Galería fotográfica";
   const siteSubtitle = subtitle.trim() || null;

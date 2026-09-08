@@ -7,6 +7,7 @@ import {
   updateAboutButtonLabel,
   updateColorPack,
   updatePhotoCorner,
+  updateAutoCaption,
 } from "@/app/admin/settings-actions";
 import { WatermarkSettingsForm } from "@/components/WatermarkSettingsForm";
 import { ReprocessPhotosButton } from "@/components/ReprocessPhotosButton";
@@ -15,6 +16,7 @@ import { SiteTextForm } from "@/components/SiteTextForm";
 import { AboutMeForm } from "@/components/AboutMeForm";
 import { ColorPackForm } from "@/components/ColorPackForm";
 import { PhotoCornerForm } from "@/components/PhotoCornerForm";
+import { AutoCaptionForm } from "@/components/AutoCaptionForm";
 
 function SettingsSection({
   title,
@@ -94,6 +96,16 @@ export default async function AdminSettingsPage() {
             initialEnabled={settings.watermarkEnabled}
             initialText={settings.watermarkText}
             onChange={updateWatermarkSettings}
+          />
+        </SettingsSection>
+
+        <SettingsSection
+          title="Identificación automática"
+          description="Al subir una foto nueva, intenta rellenar el pie de foto solo."
+        >
+          <AutoCaptionForm
+            initialEnabled={settings.autoCaptionEnabled}
+            onChange={updateAutoCaption}
           />
         </SettingsSection>
 

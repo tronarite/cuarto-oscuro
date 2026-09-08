@@ -13,6 +13,7 @@ import {
 } from "@/lib/storage";
 import { getSettings } from "@/lib/settings";
 import { applyPinning } from "@/lib/photo-order";
+import { detectPhotoCaption } from "@/lib/vision";
 
 export interface UploadFormState {
   error?: string;
@@ -61,6 +62,14 @@ export async function uploadPhoto(
   const display = await generateDisplayImage(buffer, watermark);
   const thumb = await generateThumbImage(buffer, watermark);
 
+  // BETA: pie de foto automático vía Google Cloud Vision — ver
+  // src/lib/vision.ts. Si la API no está configurada o falla, sigue
+  // exactamente igual que sin el ajuste activado (description queda
+  // null, se rellena a mano como siempre).
+  const autoCaption = settings.autoCaptionEnabled
+    ? await detectPhotoCaption(thumb.buffer)
+    : null;
+
   const photo = await prisma.photo.create({
     data: {
       galleryId,
@@ -68,6 +77,7 @@ export async function uploadPhoto(
       contentHash,
       width: display.width,
       height: display.height,
+      description: autoCaption,
       originalPath: "",
       displayPath: "",
       thumbPath: "",
