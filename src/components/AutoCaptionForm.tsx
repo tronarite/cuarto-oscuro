@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useToast } from "@/components/ToastProvider";
 
-// BETA: ver src/lib/vision.ts. Sin GOOGLE_VISION_API_KEY en el entorno
-// el interruptor se puede activar igualmente, pero no hará nada al
-// subir fotos hasta que se configure la clave.
+// BETA: ver src/lib/vision.ts. Sin GOOGLE_VISION_CREDENTIALS_JSON en el
+// entorno el interruptor se puede activar igualmente, pero no hará nada
+// al subir fotos hasta que se configuren las credenciales.
 export function AutoCaptionForm({
   initialEnabled,
   onChange,
@@ -58,9 +58,12 @@ export function AutoCaptionForm({
       </button>
       <p className="text-xs text-muted-foreground">
         Usa Google Cloud Vision para reconocer la foto (mismo motor que
-        &ldquo;Buscar con esta imagen&rdquo; de Google Imágenes). Necesita la clave
-        <code className="mx-1 rounded bg-surface px-1 py-0.5">GOOGLE_VISION_API_KEY</code>
-        configurada en el servidor — sin ella, este interruptor no hace
+        &ldquo;Buscar con esta imagen&rdquo; de Google Imágenes). Necesita las
+        credenciales de una cuenta de servicio de Google Cloud en
+        <code className="mx-1 rounded bg-surface px-1 py-0.5">
+          GOOGLE_VISION_CREDENTIALS_JSON
+        </code>
+        configuradas en el servidor — sin ellas, este interruptor no hace
         nada. Si no encuentra una identificación clara, el pie de foto se
         queda vacío, igual que hoy.
       </p>
