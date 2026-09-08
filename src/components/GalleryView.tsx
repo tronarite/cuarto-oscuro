@@ -349,19 +349,19 @@ export function GalleryView({
               </p>
             )}
             {(openPhoto.description || exifLine(openPhoto).length > 0) && (
-              <div className="pointer-events-none absolute inset-x-4 bottom-6 flex justify-center sm:bottom-10">
+              <div className="pointer-events-none absolute inset-x-4 bottom-3 flex justify-center sm:bottom-4">
                 {/* Difuminado solo detrás de este cuadro (backdrop-blur,
                     no una copia de la foto) para que el texto siga
                     legible aunque la zona de la foto donde cae sea
                     clara o muy detallada — mismo backdrop-blur-sm ya
                     usado en los botones de cerrar/anterior/siguiente,
                     barato porque solo cubre esta caja pequeña. */}
-                <div className="max-w-lg rounded-2xl bg-black/40 px-5 py-3 text-center backdrop-blur-sm">
+                <div className="max-w-xs rounded-xl bg-black/40 px-3 py-1.5 text-center backdrop-blur-sm">
                   {openPhoto.description && (
-                    <p className="text-base text-white">{openPhoto.description}</p>
+                    <p className="text-sm text-white">{openPhoto.description}</p>
                   )}
                   {exifLine(openPhoto).length > 0 && (
-                    <p className="mt-1 text-sm text-white/70">
+                    <p className="mt-0.5 text-xs text-white/70">
                       {exifLine(openPhoto).join(" · ")}
                     </p>
                   )}
