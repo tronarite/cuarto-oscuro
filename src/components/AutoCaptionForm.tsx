@@ -36,7 +36,7 @@ export function AutoCaptionForm({
   async function handleIdentifyExisting() {
     if (
       !confirm(
-        "Esto identifica todas las fotos que no tienen pie de foto y REGENERA los que se pusieron automáticamente antes (por ejemplo, con un resultado peor de una versión anterior). Los pies de foto que hayas escrito o editado tú a mano nunca se tocan. Puede tardar un rato y gasta cuota de la API de Google. ¿Continuar?",
+        "Esto REGENERA el pie de foto de TODAS las fotos de todas las galerías, tengan ya uno o no (incluidos los que hayas escrito tú a mano: si Gemini da un resultado, lo sobreescribe). Va despacio a propósito (unos 4-5 segundos por foto) para no superar el límite gratuito de la API de Google, así que con muchas fotos puede tardar varios minutos — no cierres esta pantalla mientras tanto. ¿Continuar?",
       )
     ) {
       return;
@@ -100,10 +100,9 @@ export function AutoCaptionForm({
       <div className="mt-1 flex flex-col items-start gap-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
           El interruptor de arriba solo afecta a fotos nuevas al subirlas.
-          Para las fotos ya subidas, este botón identifica las que no
-          tienen pie de foto y regenera las que se pusieron
-          automáticamente antes — los pies de foto que hayas escrito o
-          editado tú a mano nunca se tocan:
+          Este botón regenera el pie de foto de TODAS las fotos ya
+          subidas, tengan uno o no (también sobreescribe los que hayas
+          escrito tú a mano):
         </p>
         <button
           type="button"
