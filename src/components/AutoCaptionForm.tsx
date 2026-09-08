@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useToast } from "@/components/ToastProvider";
 import { identifyExistingPhotos } from "@/app/admin/photo-maintenance-actions";
 
-// BETA: ver src/lib/vision.ts. Sin GOOGLE_VISION_CREDENTIALS_JSON en el
-// entorno el interruptor se puede activar igualmente, pero no hará nada
-// al subir fotos hasta que se configuren las credenciales.
+// BETA: ver src/lib/vision.ts. Sin GEMINI_API_KEY en el entorno el
+// interruptor se puede activar igualmente, pero no hará nada al subir
+// fotos hasta que se configure la clave.
 export function AutoCaptionForm({
   initialEnabled,
   onChange,
@@ -80,15 +80,21 @@ export function AutoCaptionForm({
         </span>
       </button>
       <p className="text-xs text-muted-foreground">
-        Usa Google Cloud Vision para reconocer la foto (mismo motor que
-        &ldquo;Buscar con esta imagen&rdquo; de Google Imágenes). Necesita las
-        credenciales de una cuenta de servicio de Google Cloud en
-        <code className="mx-1 rounded bg-surface px-1 py-0.5">
-          GOOGLE_VISION_CREDENTIALS_JSON
-        </code>
-        configuradas en el servidor — sin ellas, este interruptor no hace
-        nada. Si no encuentra una identificación clara, el pie de foto se
-        queda vacío, igual que hoy.
+        Usa Gemini (IA de Google) para describir la foto con una frase
+        corta y natural. Necesita una clave de
+        <a
+          href="https://aistudio.google.com/apikey"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mx-1 underline hover:text-accent"
+        >
+          Google AI Studio
+        </a>
+        en
+        <code className="mx-1 rounded bg-surface px-1 py-0.5">GEMINI_API_KEY</code>
+        configurada en el servidor — sin ella, este interruptor no hace
+        nada. Si no encuentra nada identificable, el pie de foto se queda
+        vacío, igual que hoy.
       </p>
 
       <div className="mt-1 flex flex-col items-start gap-2 border-t border-border pt-3">
