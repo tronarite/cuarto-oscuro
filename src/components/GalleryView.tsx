@@ -302,25 +302,6 @@ export function GalleryView({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
           >
-            {/* Fondo "ambient": eco borroso de la propia foto rellenando
-                las franjas que deja el object-contain, en vez de negro
-                plano. Difuminar a pantalla completa (blur-3xl sobre un
-                elemento h-full w-full) es carísimo — y se recalculaba en
-                cada cambio de foto, de ahí el lag al pasar entre fotos.
-                Truco barato: la imagen se pinta pequeña (15% del hueco)
-                y solo ESA versión pequeña se difumina; luego se reescala
-                por composición de GPU (transform), que es prácticamente
-                gratis. Mismo efecto visual, coste muchísimo menor. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/thumb/${openPhoto.id}`}
-              alt=""
-              aria-hidden
-              draggable={false}
-              fetchPriority="low"
-              className="absolute inset-0 m-auto h-[15%] w-[15%] object-cover opacity-40 blur-md"
-              style={{ transform: "scale(7)" }}
-            />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/img/display/${openPhoto.id}`}
@@ -368,15 +349,23 @@ export function GalleryView({
               </p>
             )}
             {(openPhoto.description || exifLine(openPhoto).length > 0) && (
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 pt-16 sm:p-6 sm:pt-24">
-                {openPhoto.description && (
-                  <p className="text-base text-white">{openPhoto.description}</p>
-                )}
-                {exifLine(openPhoto).length > 0 && (
-                  <p className="mt-1 text-sm text-white/70">
-                    {exifLine(openPhoto).join(" · ")}
-                  </p>
-                )}
+              <div className="pointer-events-none absolute inset-x-4 bottom-6 flex justify-center sm:bottom-10">
+                {/* Difuminado solo detrás de este cuadro (backdrop-blur,
+                    no una copia de la foto) para que el texto siga
+                    legible aunque la zona de la foto donde cae sea
+                    clara o muy detallada — mismo backdrop-blur-sm ya
+                    usado en los botones de cerrar/anterior/siguiente,
+                    barato porque solo cubre esta caja pequeña. */}
+                <div className="max-w-lg rounded-2xl bg-black/40 px-5 py-3 text-center backdrop-blur-sm">
+                  {openPhoto.description && (
+                    <p className="text-base text-white">{openPhoto.description}</p>
+                  )}
+                  {exifLine(openPhoto).length > 0 && (
+                    <p className="mt-1 text-sm text-white/70">
+                      {exifLine(openPhoto).join(" · ")}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>
