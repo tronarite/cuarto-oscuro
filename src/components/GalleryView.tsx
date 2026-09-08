@@ -303,16 +303,23 @@ export function GalleryView({
             onPointerUp={handlePointerUp}
           >
             {/* Fondo "ambient": eco borroso de la propia foto rellenando
-                las franjas que deja el object-contain cuando la
-                proporción de la foto no coincide con la de la pantalla,
-                en vez de negro plano. */}
+                las franjas que deja el object-contain, en vez de negro
+                plano. Difuminar a pantalla completa (blur-3xl sobre un
+                elemento h-full w-full) es carísimo — y se recalculaba en
+                cada cambio de foto, de ahí el lag al pasar entre fotos.
+                Truco barato: la imagen se pinta pequeña (15% del hueco)
+                y solo ESA versión pequeña se difumina; luego se reescala
+                por composición de GPU (transform), que es prácticamente
+                gratis. Mismo efecto visual, coste muchísimo menor. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/img/thumb/${openPhoto.id}`}
               alt=""
               aria-hidden
               draggable={false}
-              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-3xl"
+              fetchPriority="low"
+              className="absolute inset-0 m-auto h-[15%] w-[15%] object-cover opacity-40 blur-md"
+              style={{ transform: "scale(7)" }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
