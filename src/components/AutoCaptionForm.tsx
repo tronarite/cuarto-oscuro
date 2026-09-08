@@ -36,7 +36,7 @@ export function AutoCaptionForm({
   async function handleIdentifyExisting() {
     if (
       !confirm(
-        "Esto intenta identificar todas las fotos ya subidas que todavía no tienen pie de foto (las que ya tienen uno puesto, a mano o automático, no se tocan). Puede tardar un rato y gasta cuota de la API de Google. ¿Continuar?",
+        "Esto identifica todas las fotos que no tienen pie de foto y REGENERA los que se pusieron automáticamente antes (por ejemplo, con un resultado peor de una versión anterior). Los pies de foto que hayas escrito o editado tú a mano nunca se tocan. Puede tardar un rato y gasta cuota de la API de Google. ¿Continuar?",
       )
     ) {
       return;
@@ -99,8 +99,11 @@ export function AutoCaptionForm({
 
       <div className="mt-1 flex flex-col items-start gap-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
-          Esto solo afecta a fotos nuevas al subirlas. Para las que ya
-          tienes subidas y no tienen pie de foto:
+          El interruptor de arriba solo afecta a fotos nuevas al subirlas.
+          Para las fotos ya subidas, este botón identifica las que no
+          tienen pie de foto y regenera las que se pusieron
+          automáticamente antes — los pies de foto que hayas escrito o
+          editado tú a mano nunca se tocan:
         </p>
         <button
           type="button"
@@ -112,7 +115,8 @@ export function AutoCaptionForm({
         </button>
         {result && (
           <p className="text-xs text-muted-foreground">
-            {result.count} identificadas, {result.skipped} sin resultado claro
+            {result.count} identificadas/regeneradas, {result.skipped} sin
+            resultado claro
             {result.failed > 0 ? `, ${result.failed} fallaron.` : "."}
           </p>
         )}
