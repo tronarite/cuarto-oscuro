@@ -27,6 +27,7 @@ export function AdminNavLinks() {
       >
         Galerías
       </Link>
+      <span className="h-4 w-px bg-border" aria-hidden />
       <Link
         href="/admin/settings"
         className={`text-sm transition-all active:scale-95 ${
@@ -37,6 +38,7 @@ export function AdminNavLinks() {
       >
         Ajustes
       </Link>
+      <span className="h-4 w-px bg-border" aria-hidden />
       <form action={logoutAdmin}>
         <button
           type="submit"
