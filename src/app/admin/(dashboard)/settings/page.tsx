@@ -42,9 +42,14 @@ function SettingsSection({
 }
 
 // Con 8 secciones, una simple lista larga era difícil de escanear (había
-// que hacer scroll a ciegas para encontrar algo). Se agrupan por tema con
-// un pequeño título de grupo — `scroll-mt-24` en cada grupo para que un
-// salto por ancla no deje el título tapado bajo la cabecera fija.
+// que hacer scroll a ciegas para encontrar algo). Se agrupan por tema:
+// antes cada grupo solo tenía una etiqueta pequeña y gris, casi igual de
+// discreta que el borde fino entre secciones de dentro del propio grupo
+// — costaba distinguir "aquí empieza un grupo nuevo" de "aquí sigue el
+// mismo". Ahora el corte de grupo lleva su propio borde grueso (no el
+// fino de SettingsSection) y un título más marcado, para que se note a
+// simple vista.`scroll-mt-24` en cada grupo para que un salto por ancla
+// no deje el título tapado bajo la cabecera fija.
 function SettingsGroup({
   id,
   title,
@@ -55,11 +60,12 @@ function SettingsGroup({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24">
-      <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
-        {title}
-      </h2>
-      <div className="mt-3">{children}</div>
+    <section
+      id={id}
+      className="scroll-mt-24 border-t-2 border-border pt-10 first:border-t-0 first:pt-0"
+    >
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }
@@ -82,7 +88,7 @@ export default async function AdminSettingsPage() {
           bajar a ciegas buscando una en concreto. */}
       <SettingsNav groups={GROUPS} />
 
-      <div className="mt-10 flex flex-col gap-14">
+      <div className="mt-10 flex flex-col">
         <SettingsGroup id="contenido" title="Contenido">
           <SettingsSection title="Portada">
             <SiteTextForm
