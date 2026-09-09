@@ -15,15 +15,7 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto max-w-[1600px] px-8 py-12">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-medium">Panel de administración</h1>
-          {galleries.length > 1 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Arrastra el icono de la esquina de una galería para cambiar
-              su orden en la portada.
-            </p>
-          )}
-        </div>
+        <h1 className="text-2xl font-medium">Panel de administración</h1>
         <Link
           href="/admin/galleries/new"
           className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all active:scale-95"

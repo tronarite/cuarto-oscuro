@@ -1,4 +1,5 @@
 import { getSettings } from "@/lib/settings";
+import { SettingsNav } from "@/components/SettingsNav";
 import {
   updateWatermarkSettings,
   updateSiteText,
@@ -30,7 +31,7 @@ function SettingsSection({
   return (
     <section className="grid gap-4 border-t border-border py-8 first:border-t-0 first:pt-0 md:grid-cols-[240px_1fr] md:gap-8">
       <div>
-        <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         {description && (
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}
@@ -40,6 +41,36 @@ function SettingsSection({
   );
 }
 
+// Con 8 secciones, una simple lista larga era difícil de escanear (había
+// que hacer scroll a ciegas para encontrar algo). Se agrupan por tema con
+// un pequeño título de grupo — `scroll-mt-24` en cada grupo para que un
+// salto por ancla no deje el título tapado bajo la cabecera fija.
+function SettingsGroup({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="scroll-mt-24">
+      <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
+        {title}
+      </h2>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+const GROUPS = [
+  { id: "contenido", label: "Contenido" },
+  { id: "apariencia", label: "Apariencia" },
+  { id: "fotos", label: "Fotos" },
+  { id: "cuenta", label: "Cuenta" },
+];
+
 export default async function AdminSettingsPage() {
   const settings = await getSettings();
 
@@ -47,81 +78,99 @@ export default async function AdminSettingsPage() {
     <main className="mx-auto max-w-5xl px-8 py-16">
       <h1 className="text-2xl font-medium">Ajustes</h1>
 
-      <div className="mt-6">
-        <SettingsSection title="Portada">
-          <SiteTextForm
-            initialTitle={settings.siteTitle}
-            initialSubtitle={settings.siteSubtitle ?? ""}
-            onChange={updateSiteText}
-          />
-        </SettingsSection>
+      {/* Navegación rápida: con tantas secciones, saltar directo evita
+          bajar a ciegas buscando una en concreto. */}
+      <SettingsNav groups={GROUPS} />
 
-        <SettingsSection
-          title="Sobre mí"
-          description='Se muestra en una página propia, enlazada desde la portada.'
-        >
-          <AboutMeForm
-            initialText={settings.aboutText ?? ""}
-            hasPhoto={Boolean(settings.aboutPhotoPath)}
-            initialEnabled={settings.aboutEnabled}
-            initialButtonLabel={settings.aboutButtonLabel}
-            onTextChange={updateAboutText}
-            onEnabledChange={updateAboutEnabled}
-            onButtonLabelChange={updateAboutButtonLabel}
-          />
-        </SettingsSection>
+      <div className="mt-10 flex flex-col gap-14">
+        <SettingsGroup id="contenido" title="Contenido">
+          <SettingsSection title="Portada">
+            <SiteTextForm
+              initialTitle={settings.siteTitle}
+              initialSubtitle={settings.siteSubtitle ?? ""}
+              onChange={updateSiteText}
+            />
+          </SettingsSection>
 
-        <SettingsSection
-          title="Estilo de color"
-          description="Se aplica a toda la web, para todo el mundo. El botón de claro/oscuro sigue funcionando dentro del pack elegido."
-        >
-          <ColorPackForm
-            initialPack={settings.colorPack}
-            onChange={updateColorPack}
-          />
-        </SettingsSection>
+          <SettingsSection
+            title="Sobre mí"
+            description="Se muestra en una página propia, enlazada desde la portada."
+          >
+            <AboutMeForm
+              initialText={settings.aboutText ?? ""}
+              hasPhoto={Boolean(settings.aboutPhotoPath)}
+              initialEnabled={settings.aboutEnabled}
+              initialButtonLabel={settings.aboutButtonLabel}
+              onTextChange={updateAboutText}
+              onEnabledChange={updateAboutEnabled}
+              onButtonLabelChange={updateAboutButtonLabel}
+            />
+          </SettingsSection>
+        </SettingsGroup>
 
-        <SettingsSection
-          title="Bordes de las fotos"
-          description="Esquina de las miniaturas en toda la web: portada, galerías y panel de administración."
-        >
-          <PhotoCornerForm
-            initialCorner={settings.photoCorner}
-            onChange={updatePhotoCorner}
-          />
-        </SettingsSection>
+        <SettingsGroup id="apariencia" title="Apariencia">
+          <SettingsSection
+            title="Estilo de color"
+            description="Se aplica a toda la web, para todo el mundo. El botón de claro/oscuro sigue funcionando dentro del pack elegido."
+          >
+            <ColorPackForm
+              initialPack={settings.colorPack}
+              onChange={updateColorPack}
+            />
+          </SettingsSection>
 
-        <SettingsSection title="Marca de agua">
-          <WatermarkSettingsForm
-            initialEnabled={settings.watermarkEnabled}
-            initialText={settings.watermarkText}
-            initialMethod={settings.watermarkMethod}
-            initialStyle={settings.watermarkStyle}
-            initialCorner={settings.watermarkCorner}
-            onChange={updateWatermarkSettings}
-          />
-        </SettingsSection>
+          <SettingsSection
+            title="Bordes de las fotos"
+            description="Esquina de las miniaturas en toda la web: portada, galerías y panel de administración."
+          >
+            <PhotoCornerForm
+              initialCorner={settings.photoCorner}
+              onChange={updatePhotoCorner}
+            />
+          </SettingsSection>
 
-        <SettingsSection
-          title="Identificación automática"
-          description="Al subir una foto nueva, intenta rellenar el pie de foto solo."
-        >
-          <AutoCaptionForm
-            initialEnabled={settings.autoCaptionEnabled}
-            onChange={updateAutoCaption}
-          />
-        </SettingsSection>
+          <SettingsSection
+            title="Marca de agua"
+            description="Protege las fotos que se ven públicamente, con el método y estilo que elijas."
+          >
+            <WatermarkSettingsForm
+              initialEnabled={settings.watermarkEnabled}
+              initialText={settings.watermarkText}
+              initialMethod={settings.watermarkMethod}
+              initialStyle={settings.watermarkStyle}
+              initialCorner={settings.watermarkCorner}
+              onChange={updateWatermarkSettings}
+            />
+          </SettingsSection>
+        </SettingsGroup>
 
-        <SettingsSection
-          title="Reprocesar fotos"
-          description="Las fotos ya subidas no cambian solas al tocar estos ajustes o la calidad: pulsa aquí para regenerarlas todas a partir de su original, aplicando la marca de agua y la calidad actuales."
-        >
-          <ReprocessPhotosButton />
-        </SettingsSection>
+        <SettingsGroup id="fotos" title="Fotos">
+          <SettingsSection
+            title="Identificación automática"
+            description="Al subir una foto nueva, intenta rellenar el pie de foto solo."
+          >
+            <AutoCaptionForm
+              initialEnabled={settings.autoCaptionEnabled}
+              onChange={updateAutoCaption}
+            />
+          </SettingsSection>
 
-        <SettingsSection title="Credenciales de administrador">
-          <AdminCredentialsForm initialUsername={settings.adminUsername ?? ""} />
-        </SettingsSection>
+          <SettingsSection
+            title="Reprocesar fotos"
+            description="Las fotos ya subidas no cambian solas al tocar estos ajustes o la calidad: pulsa aquí para regenerarlas todas a partir de su original, aplicando la marca de agua y la calidad actuales."
+          >
+            <ReprocessPhotosButton />
+          </SettingsSection>
+        </SettingsGroup>
+
+        <SettingsGroup id="cuenta" title="Cuenta">
+          <SettingsSection
+            title="Credenciales de administrador"
+            description="El usuario y la contraseña con los que entras a este panel."
+          >
+            <AdminCredentialsForm initialUsername={settings.adminUsername ?? ""} />
+          </SettingsSection>
+        </SettingsGroup>
       </div>
     </main>
   );

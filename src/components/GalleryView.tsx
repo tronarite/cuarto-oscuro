@@ -139,7 +139,22 @@ export function GalleryView({
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const [fillMode, setFillMode] = useState(readFillMode);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const panStartRef = useRef<{
+    x: number;
+    y: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
+
   function toggleFillMode() {
+    // El zoom se resetea al cambiar de método de ajuste: combinar zoom
+    // con el cambio de object-contain a object-cover (o al revés) deja
+    // un pan calculado para un encaje distinto, así que el resultado
+    // queda descolocado — más simple empezar de cero.
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
     setFillMode((prev) => {
       const next = !prev;
       try {
@@ -152,22 +167,33 @@ export function GalleryView({
     });
   }
 
-  // Controles del visor (flechas, cerrar, caption...) tipo YouTube: se
+  // Controles del visor (flechas, cerrar, ampliar...) tipo YouTube: se
   // ven al abrir/mover el ratón y se ocultan solos tras un momento quieto.
+  // El pie de foto tiene su propio ciclo, aparte (ver más abajo): al
+  // pasar a la siguiente foto solo debe "saltar" el pie de foto, no
+  // todos los botones — si estos ya estaban ocultos por inactividad,
+  // cambiar de foto (con las flechas o el teclado, sin haber tocado el
+  // ratón) no debe resucitarlos.
   const { visible: controlsVisible, onMouseMove: showControls } =
-    useAutoHideControls(openId);
+    useAutoHideControls();
   const controlsFade = `transition-opacity duration-300 ${
     controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"
   }`;
 
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const panStartRef = useRef<{
-    x: number;
-    y: number;
-    panX: number;
-    panY: number;
-  } | null>(null);
+  // El pie de foto sí reaparece al cambiar de foto (resetKey=openId),
+  // aunque no se haya movido el ratón — es lo único que debe "saltar".
+  const { visible: captionVisible, onMouseMove: showCaption } =
+    useAutoHideControls(openId);
+  const captionFade = `transition-opacity duration-300 ${
+    captionVisible ? "opacity-100" : "pointer-events-none opacity-0"
+  }`;
+
+  // Mover el ratón reaparece todo junto; solo el cambio de foto en sí
+  // (sin ratón de por medio) está reservado al pie de foto.
+  function handlePointerActivity() {
+    showControls();
+    showCaption();
+  }
 
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -259,6 +285,11 @@ export function GalleryView({
   }
 
   function handlePointerDown(e: React.PointerEvent) {
+    // Captura el puntero: así, si el arrastre termina encima de un botón
+    // (p. ej. cerca de las flechas), el "pointerup" sigue llegando aquí
+    // en vez de al botón que quede debajo, que rompería el swipe/paneo a
+    // medias.
+    e.currentTarget.setPointerCapture(e.pointerId);
     swipeStartRef.current = { x: e.clientX, y: e.clientY };
     if (zoom > 1) {
       panStartRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
@@ -331,27 +362,34 @@ export function GalleryView({
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           onClick={closeLightbox}
-          onMouseMove={showControls}
+          onMouseMove={handlePointerActivity}
         >
           <div
             className="relative h-full w-full overflow-hidden"
             onClick={(e) => e.stopPropagation()}
-            onDoubleClick={toggleZoom}
-            onWheel={handleWheel}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
           >
-            {/* La marca superpuesta va en el mismo div transformado que la
-                foto (no como hermana suelta): así se mueve/escala pegada
-                a la imagen durante el zoom/pan, en vez de quedarse fija
+            {/* Los gestos de zoom/pan/swipe van aquí, no en el contenedor
+                de arriba: así solo cuentan los que empiezan sobre la
+                propia foto. Antes estaban en el div de fuera, que también
+                contiene los botones (flechas, cerrar, ampliar...) — al
+                burbujear un evento del botón hasta ahí, un doble click
+                rápido en "Siguiente" (típico al pasar fotos deprisa) se
+                interpretaba como doble click para hacer zoom. La marca
+                superpuesta va en el mismo div transformado que la foto
+                (no como hermana suelta): así se mueve/escala pegada a la
+                imagen durante el zoom/pan, en vez de quedarse fija
                 mientras la foto se desplaza debajo. */}
             <div
+              onDoubleClick={toggleZoom}
+              onWheel={handleWheel}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
               style={{
                 transform:
                   zoom > 1 ? `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)` : undefined,
               }}
-              className={`relative h-full w-full transition-transform duration-200 ease-out ${
+              className={`relative h-full w-full touch-none transition-transform duration-200 ease-out ${
                 zoom > 1 ? "cursor-grab" : "cursor-zoom-in"
               }`}
             >
@@ -392,21 +430,30 @@ export function GalleryView({
                 </button>
               </>
             )}
-            <button
-              type="button"
-              onClick={toggleFillMode}
-              aria-label={
-                fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
-              }
-              title={fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"}
-              className={`absolute left-4 top-4 rounded-full p-2 backdrop-blur-sm transition-all active:scale-90 ${controlsFade} ${
-                fillMode
-                  ? "bg-white text-black"
-                  : "bg-black/50 text-white/80 hover:bg-black/70 hover:text-accent"
-              }`}
-            >
-              <ExpandIcon />
-            </button>
+            <div className={`absolute left-4 top-4 flex items-center gap-2 ${controlsFade}`}>
+              <button
+                type="button"
+                onClick={toggleFillMode}
+                aria-label={
+                  fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
+                }
+                title={
+                  fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
+                }
+                className={`rounded-full p-2 backdrop-blur-sm transition-all active:scale-90 ${
+                  fillMode
+                    ? "bg-white text-black"
+                    : "bg-black/50 text-white/80 hover:bg-black/70 hover:text-accent"
+                }`}
+              >
+                <ExpandIcon />
+              </button>
+              {ordered.length > 1 && currentIndex !== -1 && (
+                <p className="rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+                  {currentIndex + 1} / {ordered.length}
+                </p>
+              )}
+            </div>
             <button
               type="button"
               onClick={closeLightbox}
@@ -414,43 +461,28 @@ export function GalleryView({
             >
               cerrar ✕
             </button>
-            {ordered.length > 1 && currentIndex !== -1 && (
-              <p
-                className={`absolute left-16 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm ${controlsFade}`}
-              >
-                {currentIndex + 1} / {ordered.length}
-              </p>
-            )}
             {(openPhoto.description || exifLine(openPhoto).length > 0) && (
               <div
-                className={`absolute inset-x-4 bottom-3 flex justify-center sm:bottom-4 ${controlsFade}`}
+                className={`absolute bottom-4 left-4 max-w-xs select-text rounded-xl bg-black/40 px-3 py-1.5 text-left backdrop-blur-sm ${captionFade}`}
                 // El resto del visor tiene gestos de zoom/pan colgados de
-                // este mismo contenedor (onDoubleClick, onWheel,
-                // onPointerDown): sin frenarlos aquí, cualquier intento de
-                // seleccionar el texto (doble click para elegir palabra,
-                // rueda al hacer scroll para leer) dispara el zoom en vez
-                // de dejar seleccionar/copiar el texto.
+                // la propia foto (onDoubleClick, onWheel, onPointerDown):
+                // sin frenarlos aquí, cualquier intento de seleccionar el
+                // texto (doble click para elegir palabra, rueda al hacer
+                // scroll para leer) dispara el zoom en vez de dejar
+                // seleccionar/copiar el texto.
                 onClick={(e) => e.stopPropagation()}
                 onDoubleClick={(e) => e.stopPropagation()}
                 onWheel={(e) => e.stopPropagation()}
                 onPointerDown={(e) => e.stopPropagation()}
               >
-                {/* Difuminado solo detrás de este cuadro (backdrop-blur,
-                    no una copia de la foto) para que el texto siga
-                    legible aunque la zona de la foto donde cae sea
-                    clara o muy detallada — mismo backdrop-blur-sm ya
-                    usado en los botones de cerrar/anterior/siguiente,
-                    barato porque solo cubre esta caja pequeña. */}
-                <div className="max-w-xs select-text rounded-xl bg-black/40 px-3 py-1.5 text-center backdrop-blur-sm">
-                  {openPhoto.description && (
-                    <p className="text-sm text-white">{openPhoto.description}</p>
-                  )}
-                  {exifLine(openPhoto).length > 0 && (
-                    <p className="mt-0.5 text-xs text-white/70">
-                      {exifLine(openPhoto).join(" · ")}
-                    </p>
-                  )}
-                </div>
+                {openPhoto.description && (
+                  <p className="text-sm text-white">{openPhoto.description}</p>
+                )}
+                {exifLine(openPhoto).length > 0 && (
+                  <p className="mt-0.5 text-xs text-white/70">
+                    {exifLine(openPhoto).join(" · ")}
+                  </p>
+                )}
               </div>
             )}
           </div>

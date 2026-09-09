@@ -85,12 +85,26 @@ export function PresentationMode({
   const photo = photos[index];
 
   // Controles tipo YouTube: se ven al entrar/mover el ratón y se ocultan
-  // solos tras un momento quieto — mismo hook que en GalleryView.tsx.
+  // solos tras un momento quieto — mismo hook que en GalleryView.tsx. El
+  // pie de foto tiene su propio ciclo aparte: al pasar de foto (con las
+  // flechas, el teclado o el avance automático, sin haber tocado el
+  // ratón) solo debe "saltar" el pie de foto, no todos los botones — si
+  // estos ya estaban ocultos por inactividad, se quedan así.
   const { visible: controlsVisible, onMouseMove: showControls } =
-    useAutoHideControls(photo?.id);
+    useAutoHideControls();
   const controlsFade = `transition-opacity duration-300 ${
     controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"
   }`;
+  const { visible: captionVisible, onMouseMove: showCaption } =
+    useAutoHideControls(photo?.id);
+  const captionFade = `transition-opacity duration-300 ${
+    captionVisible ? "opacity-100" : "pointer-events-none opacity-0"
+  }`;
+
+  function handlePointerActivity() {
+    showControls();
+    showCaption();
+  }
 
   if (!photo) return null;
   const specs = exifLine(photo);
@@ -99,7 +113,7 @@ export function PresentationMode({
     <div
       ref={containerRef}
       className="fixed inset-0 z-[60] overflow-hidden bg-black"
-      onMouseMove={showControls}
+      onMouseMove={handlePointerActivity}
     >
       {/* Mismo estilo "ventana completa" que el visor normal
           (GalleryView.tsx): la foto llena toda la pantalla y los
@@ -133,26 +147,35 @@ export function PresentationMode({
         </motion.div>
       </AnimatePresence>
 
-      <p
-        className={`absolute left-16 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm ${controlsFade}`}
-      >
-        {index + 1} / {photos.length}
-      </p>
-      <button
-        type="button"
-        onClick={onToggleFillMode}
-        aria-label={
-          fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
-        }
-        title={fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"}
-        className={`absolute left-4 top-4 rounded-full p-2 backdrop-blur-sm transition-all active:scale-90 ${controlsFade} ${
-          fillMode
-            ? "bg-white text-black"
-            : "bg-black/50 text-white/80 hover:bg-black/70 hover:text-accent"
-        }`}
-      >
-        <ExpandIcon />
-      </button>
+      <div className={`absolute left-4 top-4 flex items-center gap-2 ${controlsFade}`}>
+        <button
+          type="button"
+          onClick={onToggleFillMode}
+          aria-label={
+            fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
+          }
+          title={fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"}
+          className={`rounded-full p-2 backdrop-blur-sm transition-all active:scale-90 ${
+            fillMode
+              ? "bg-white text-black"
+              : "bg-black/50 text-white/80 hover:bg-black/70 hover:text-accent"
+          }`}
+        >
+          <ExpandIcon />
+        </button>
+        {photos.length > 1 && (
+          <p className="rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+            {index + 1} / {photos.length}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={() => setPlaying((p) => !p)}
+          className="rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-95"
+        >
+          {playing ? "pausa" : "reanudar"}
+        </button>
+      </div>
       <button
         type="button"
         onClick={onClose}
@@ -182,27 +205,17 @@ export function PresentationMode({
         </>
       )}
 
-      <button
-        type="button"
-        onClick={() => setPlaying((p) => !p)}
-        className={`absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-95 ${controlsFade}`}
-      >
-        {playing ? "pausa" : "reanudar"}
-      </button>
-
       {(photo.description || specs.length > 0) && (
         <div
-          className={`absolute inset-x-4 bottom-16 flex justify-center sm:bottom-20 ${controlsFade}`}
+          className={`absolute bottom-4 left-4 max-w-xs select-text rounded-xl bg-black/40 px-3 py-1.5 text-left backdrop-blur-sm ${captionFade}`}
           // Mismo motivo que en GalleryView.tsx: sin esto, seleccionar el
           // texto compite con los atajos de teclado/clicks del visor.
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="max-w-xs select-text rounded-xl bg-black/40 px-3 py-1.5 text-center backdrop-blur-sm">
-            {photo.description && <p className="text-sm text-white">{photo.description}</p>}
-            {specs.length > 0 && (
-              <p className="mt-0.5 text-xs text-white/70">{specs.join(" · ")}</p>
-            )}
-          </div>
+          {photo.description && <p className="text-sm text-white">{photo.description}</p>}
+          {specs.length > 0 && (
+            <p className="mt-0.5 text-xs text-white/70">{specs.join(" · ")}</p>
+          )}
         </div>
       )}
     </div>
