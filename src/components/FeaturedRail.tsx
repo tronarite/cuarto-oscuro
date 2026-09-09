@@ -2,6 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { WatermarkOverlay } from "@/components/WatermarkOverlay";
+import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 
 export interface RailPhoto {
   id: string;
@@ -22,10 +24,12 @@ function RailPhotoCard({
   photo,
   orientation,
   hidden,
+  watermark,
 }: {
   photo: RailPhoto;
   orientation: RailOrientation;
   hidden?: boolean;
+  watermark: WatermarkDisplaySettings;
 }) {
   return (
     <Link
@@ -37,7 +41,7 @@ function RailPhotoCard({
             ? `${photo.width} / ${photo.height}`
             : "4 / 3",
       }}
-      className={`block shrink-0 select-none overflow-hidden rounded-[var(--photo-radius)] bg-surface shadow-sm ${
+      className={`relative block shrink-0 select-none overflow-hidden rounded-[var(--photo-radius)] bg-surface shadow-sm ${
         orientation === "vertical" ? "w-full" : "h-full"
       }`}
       tabIndex={hidden ? -1 : undefined}
@@ -49,6 +53,7 @@ function RailPhotoCard({
         draggable={false}
         className="h-full w-full select-none object-contain"
       />
+      <WatermarkOverlay watermark={watermark} width={photo.width} height={photo.height} />
     </Link>
   );
 }
@@ -57,10 +62,12 @@ export function FeaturedRail({
   photos,
   className = "",
   orientation = "vertical",
+  watermark,
 }: {
   photos: RailPhoto[];
   className?: string;
   orientation?: RailOrientation;
+  watermark: WatermarkDisplaySettings;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -265,6 +272,7 @@ export function FeaturedRail({
                     key={`${copy}-${rep}-${photo.id}`}
                     photo={photo}
                     orientation={orientation}
+                    watermark={watermark}
                     hidden={copy === 1}
                   />
                 ))}

@@ -5,6 +5,8 @@ import { MasonryGrid, type MasonryItem } from "@/components/MasonryGrid";
 import { exifLine, type ExifSource } from "@/lib/exif-format";
 import { slotSizeForIndex, SLOT_LABEL, type GalleryLayout } from "@/lib/grid-templates";
 import { applyPinning } from "@/lib/photo-order";
+import { WatermarkOverlay } from "@/components/WatermarkOverlay";
+import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 
 interface PhotoItem extends ExifSource {
   id: string;
@@ -22,6 +24,7 @@ type LaidOutPhoto = PhotoItem & MasonryItem;
 interface PhotoManagerListProps {
   photos: PhotoItem[];
   layout: GalleryLayout;
+  watermark: WatermarkDisplaySettings;
   onReorder: (orderedIds: string[]) => Promise<void>;
   onUpdateDescription: (photoId: string, description: string) => Promise<void>;
   onToggleHomeFeatured: (
@@ -35,6 +38,7 @@ interface PhotoManagerListProps {
 export function PhotoManagerList({
   photos,
   layout,
+  watermark,
   onReorder,
   onUpdateDescription,
   onToggleHomeFeatured,
@@ -169,13 +173,20 @@ export function PhotoManagerList({
               }`}
             >
               {photo.thumbPath && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`/api/img/thumb/${photo.id}`}
-                  alt=""
-                  draggable={false}
-                  className="h-full w-full select-none object-contain"
-                />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/img/thumb/${photo.id}`}
+                    alt=""
+                    draggable={false}
+                    className="h-full w-full select-none object-contain"
+                  />
+                  <WatermarkOverlay
+                    watermark={watermark}
+                    width={photo.width}
+                    height={photo.height}
+                  />
+                </>
               )}
 
               <div className="absolute inset-x-2 top-2 flex items-center justify-between">

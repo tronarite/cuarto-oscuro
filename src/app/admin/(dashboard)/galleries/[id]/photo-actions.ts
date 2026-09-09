@@ -54,8 +54,13 @@ export async function uploadPhoto(
 
   const settings = await getSettings();
   const watermark = {
-    enabled: settings.watermarkEnabled,
+    // En método Superpuesta la marca la pinta el navegador (ver
+    // WatermarkOverlay) — el archivo se procesa limpio, sin incrustar
+    // nada, aunque el interruptor esté activado.
+    enabled: settings.watermarkEnabled && settings.watermarkMethod === "EMBEDDED",
     text: settings.watermarkText,
+    style: settings.watermarkStyle,
+    corner: settings.watermarkCorner,
   };
 
   const exif = await extractExif(buffer).catch(() => ({}) as ExtractedExif);

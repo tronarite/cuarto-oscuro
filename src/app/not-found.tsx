@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/settings";
+import { toWatermarkDisplaySettings } from "@/lib/watermark-svg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GallerySuggestions } from "@/components/GallerySuggestions";
 import { BackHomeLink } from "@/components/BackHomeLink";
@@ -30,6 +31,7 @@ export default async function NotFound() {
     getSettings(),
     getGallerySuggestions(undefined, 2),
   ]);
+  const watermark = toWatermarkDisplaySettings(settings);
 
   return (
     <main className="relative">
@@ -62,6 +64,7 @@ export default async function NotFound() {
 
       <GallerySuggestions
         galleries={suggestions}
+        watermark={watermark}
         heading="Mientras tanto, quizá te interese alguna de estas"
       />
     </main>

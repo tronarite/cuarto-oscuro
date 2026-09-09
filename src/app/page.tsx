@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { toWatermarkDisplaySettings } from "@/lib/watermark-svg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
 import { BackToTopButton } from "@/components/BackToTopButton";
@@ -62,6 +63,7 @@ export default async function Home() {
     prisma.gallery.aggregate({ _sum: { visitCount: true } }),
   ]);
   const totalVisits = visitAggregate._sum.visitCount ?? 0;
+  const watermark = toWatermarkDisplaySettings(settings);
 
   const railPhotos = featuredPhotos.map((photo) => ({
     id: photo.id,
@@ -111,6 +113,7 @@ export default async function Home() {
           <FeaturedRail
             photos={railPhotos}
             orientation="horizontal"
+            watermark={watermark}
             className="h-full"
           />
         </div>
@@ -144,6 +147,7 @@ export default async function Home() {
           <FeaturedRail
             photos={railPhotos}
             orientation="vertical"
+            watermark={watermark}
             className="h-full"
           />
         </div>

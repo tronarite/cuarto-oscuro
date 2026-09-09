@@ -20,8 +20,10 @@ function sleep(ms: number): Promise<void> {
 export async function reprocessAllPhotos(): Promise<{ count: number; failed: number }> {
   const settings = await getSettings();
   const watermark = {
-    enabled: settings.watermarkEnabled,
+    enabled: settings.watermarkEnabled && settings.watermarkMethod === "EMBEDDED",
     text: settings.watermarkText,
+    style: settings.watermarkStyle,
+    corner: settings.watermarkCorner,
   };
   const uploadsRoot = path.join(process.cwd(), "uploads");
 

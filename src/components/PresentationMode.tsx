@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { exifLine } from "@/lib/exif-format";
+import { ChevronIcon } from "@/components/icons";
+import { WatermarkOverlay } from "@/components/WatermarkOverlay";
+import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 import type { GalleryPhoto } from "@/components/GalleryView";
 
 const SLIDE_DURATION_MS = 6000;
@@ -10,10 +13,12 @@ const SLIDE_DURATION_MS = 6000;
 export function PresentationMode({
   photos,
   startId,
+  watermark,
   onClose,
 }: {
   photos: GalleryPhoto[];
   startId?: string | null;
+  watermark: WatermarkDisplaySettings;
   onClose: () => void;
 }) {
   const startIndex = Math.max(
@@ -74,78 +79,87 @@ export function PresentationMode({
   const specs = exifLine(photo);
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-[60] flex flex-col bg-black"
-    >
-      <div className="flex shrink-0 items-center justify-between p-5">
-        <span className="text-xs text-neutral-500">
-          {index + 1} / {photos.length}
-        </span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-sm text-neutral-400 transition-all hover:text-neutral-100 active:scale-90"
+    <div ref={containerRef} className="fixed inset-0 z-[60] overflow-hidden bg-black">
+      {/* Mismo estilo "ventana completa" que el visor normal
+          (GalleryView.tsx): la foto llena toda la pantalla y los
+          controles flotan encima como píldoras traslúcidas, en vez de
+          barras fijas de cabecera/pie que le restan alto a la imagen. */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={photo.id}
+          initial={{ opacity: 0, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="absolute inset-0 flex items-center justify-center"
         >
-          salir ✕
-        </button>
-      </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/img/display/${photo.id}`}
+            alt={photo.description ?? ""}
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            className="h-full w-full select-none object-contain"
+          />
+          <WatermarkOverlay watermark={watermark} width={photo.width} height={photo.height} />
+        </motion.div>
+      </AnimatePresence>
 
-      <div className="relative min-h-0 flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={photo.id}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-hidden px-8"
+      <p className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+        {index + 1} / {photos.length}
+      </p>
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+      >
+        salir ✕
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="Anterior"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/display/${photo.id}`}
-              alt={photo.description ?? ""}
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              className="max-h-[75%] max-w-full select-none object-contain"
-            />
-            {(photo.description || specs.length > 0) && (
-              <div className="max-w-2xl text-center text-neutral-300">
-                {photo.description && <p className="text-sm">{photo.description}</p>}
-                {specs.length > 0 && (
-                  <p className="mt-1 text-xs text-neutral-500">{specs.join(" · ")}</p>
-                )}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            <ChevronIcon direction="left" />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Siguiente"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+          >
+            <ChevronIcon direction="right" />
+          </button>
+        </>
+      )}
 
-      <div className="flex shrink-0 items-center justify-center gap-6 p-6">
-        <button
-          type="button"
-          onClick={prev}
-          className="text-neutral-400 transition-all hover:text-neutral-100 active:scale-90"
-          aria-label="Anterior"
+      <button
+        type="button"
+        onClick={() => setPlaying((p) => !p)}
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-95"
+      >
+        {playing ? "pausa" : "reanudar"}
+      </button>
+
+      {(photo.description || specs.length > 0) && (
+        <div
+          className="absolute inset-x-4 bottom-16 flex justify-center sm:bottom-20"
+          // Mismo motivo que en GalleryView.tsx: sin esto, seleccionar el
+          // texto compite con los atajos de teclado/clicks del visor.
+          onClick={(e) => e.stopPropagation()}
         >
-          ←
-        </button>
-        <button
-          type="button"
-          onClick={() => setPlaying((p) => !p)}
-          className="text-sm text-neutral-400 transition-all hover:text-neutral-100 active:scale-95"
-        >
-          {playing ? "pausa" : "reanudar"}
-        </button>
-        <button
-          type="button"
-          onClick={next}
-          className="text-neutral-400 transition-all hover:text-neutral-100 active:scale-90"
-          aria-label="Siguiente"
-        >
-          →
-        </button>
-      </div>
+          <div className="max-w-xs select-text rounded-xl bg-black/40 px-3 py-1.5 text-center backdrop-blur-sm">
+            {photo.description && <p className="text-sm text-white">{photo.description}</p>}
+            {specs.length > 0 && (
+              <p className="mt-0.5 text-xs text-white/70">{specs.join(" · ")}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { logoutAdmin } from "@/app/admin/actions";
+import { AdminNavLinks } from "@/components/AdminNavLinks";
 
 export default function AdminDashboardLayout({
   children,
@@ -12,22 +12,7 @@ export default function AdminDashboardLayout({
         <Link href="/admin" className="font-medium">
           Panel de administración
         </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/admin/settings"
-            className="text-sm text-muted-foreground transition-all hover:text-foreground active:scale-95"
-          >
-            Ajustes
-          </Link>
-          <form action={logoutAdmin}>
-            <button
-              type="submit"
-              className="text-sm text-muted-foreground transition-all hover:text-foreground active:scale-95"
-            >
-              Cerrar sesión
-            </button>
-          </form>
-        </div>
+        <AdminNavLinks />
       </header>
       {children}
     </div>

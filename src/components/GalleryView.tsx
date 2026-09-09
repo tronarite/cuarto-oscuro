@@ -8,6 +8,9 @@ import { seededRandom } from "@/lib/seeded-random";
 import { slotSizeForIndex, type GalleryLayout } from "@/lib/grid-templates";
 import { applyPinning } from "@/lib/photo-order";
 import { PresentationMode } from "@/components/PresentationMode";
+import { ChevronIcon } from "@/components/icons";
+import { WatermarkOverlay } from "@/components/WatermarkOverlay";
+import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 
 export interface GalleryPhoto extends ExifSource {
   id: string;
@@ -35,27 +38,13 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function ChevronIcon({ direction }: { direction: "left" | "right" }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-6 w-6"
-    >
-      <path d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
-    </svg>
-  );
-}
-
 function Tile({
   photo,
+  watermark,
   onOpen,
 }: {
   photo: LaidOutPhoto;
+  watermark: WatermarkDisplaySettings;
   onOpen: (id: string) => void;
 }) {
   const specs = exifLine(photo);
@@ -101,6 +90,7 @@ function Tile({
         onContextMenu={(e) => e.preventDefault()}
         className="h-full w-full select-none object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
       />
+      <WatermarkOverlay watermark={watermark} width={photo.width} height={photo.height} />
       {hasCaption && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3 pt-10 text-left">
           {photo.description && (
@@ -120,9 +110,11 @@ function Tile({
 export function GalleryView({
   photos,
   layout,
+  watermark,
 }: {
   photos: GalleryPhoto[];
   layout: GalleryLayout;
+  watermark: WatermarkDisplaySettings;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
@@ -279,13 +271,19 @@ export function GalleryView({
       <div className="mx-auto max-w-[1180px]">
         <MasonryGrid
           items={ordered.slice(0, visibleCount)}
-          renderItem={(photo) => <Tile photo={photo} onOpen={setOpenId} />}
+          renderItem={(photo) => (
+            <Tile photo={photo} watermark={watermark} onOpen={setOpenId} />
+          )}
         />
         <div ref={sentinelRef} aria-hidden className="h-1" />
       </div>
 
       {presenting && (
-        <PresentationMode photos={ordered} onClose={() => setPresenting(false)} />
+        <PresentationMode
+          photos={ordered}
+          watermark={watermark}
+          onClose={() => setPresenting(false)}
+        />
       )}
 
       {openPhoto && (
@@ -302,20 +300,33 @@ export function GalleryView({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/display/${openPhoto.id}`}
-              alt={openPhoto.description ?? ""}
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
+            {/* La marca superpuesta va en el mismo div transformado que la
+                foto (no como hermana suelta): así se mueve/escala pegada
+                a la imagen durante el zoom/pan, en vez de quedarse fija
+                mientras la foto se desplaza debajo. */}
+            <div
               style={{
                 transform:
                   zoom > 1 ? `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)` : undefined,
               }}
-              className={`relative h-full w-full select-none object-contain transition-transform duration-200 ease-out ${
+              className={`relative h-full w-full transition-transform duration-200 ease-out ${
                 zoom > 1 ? "cursor-grab" : "cursor-zoom-in"
               }`}
-            />
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/img/display/${openPhoto.id}`}
+                alt={openPhoto.description ?? ""}
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                className="h-full w-full select-none object-contain"
+              />
+              <WatermarkOverlay
+                watermark={watermark}
+                width={openPhoto.width}
+                height={openPhoto.height}
+              />
+            </div>
             {ordered.length > 1 && (
               <>
                 <button
@@ -349,14 +360,26 @@ export function GalleryView({
               </p>
             )}
             {(openPhoto.description || exifLine(openPhoto).length > 0) && (
-              <div className="pointer-events-none absolute inset-x-4 bottom-3 flex justify-center sm:bottom-4">
+              <div
+                className="absolute inset-x-4 bottom-3 flex justify-center sm:bottom-4"
+                // El resto del visor tiene gestos de zoom/pan colgados de
+                // este mismo contenedor (onDoubleClick, onWheel,
+                // onPointerDown): sin frenarlos aquí, cualquier intento de
+                // seleccionar el texto (doble click para elegir palabra,
+                // rueda al hacer scroll para leer) dispara el zoom en vez
+                // de dejar seleccionar/copiar el texto.
+                onClick={(e) => e.stopPropagation()}
+                onDoubleClick={(e) => e.stopPropagation()}
+                onWheel={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 {/* Difuminado solo detrás de este cuadro (backdrop-blur,
                     no una copia de la foto) para que el texto siga
                     legible aunque la zona de la foto donde cae sea
                     clara o muy detallada — mismo backdrop-blur-sm ya
                     usado en los botones de cerrar/anterior/siguiente,
                     barato porque solo cubre esta caja pequeña. */}
-                <div className="max-w-xs rounded-xl bg-black/40 px-3 py-1.5 text-center backdrop-blur-sm">
+                <div className="max-w-xs select-text rounded-xl bg-black/40 px-3 py-1.5 text-center backdrop-blur-sm">
                   {openPhoto.description && (
                     <p className="text-sm text-white">{openPhoto.description}</p>
                   )}

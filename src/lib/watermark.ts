@@ -1,4 +1,9 @@
 import sharp from "sharp";
+import {
+  buildWatermarkSvg,
+  type WatermarkCorner,
+  type WatermarkStyle,
+} from "@/lib/watermark-svg";
 
 // Resoluciones generosas: estas imágenes ya no son "originales sin
 // procesar" (nunca se sirve eso), pero deben verse nítidas incluso en
@@ -16,27 +21,10 @@ const THUMB_MAX_EDGE = 1200;
 export interface WatermarkOptions {
   enabled: boolean;
   text: string;
-}
-
-function escapeXml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function watermarkSvg(width: number, height: number, text: string): Buffer {
-  const safeText = escapeXml(text);
-  return Buffer.from(`
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="wm" width="340" height="170" patternTransform="rotate(-30)" patternUnits="userSpaceOnUse">
-          <text x="0" y="90" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#ffffff" fill-opacity="0.16">${safeText}</text>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#wm)" />
-    </svg>
-  `);
+  // Solo importan cuando enabled=true. Con default para las llamadas
+  // existentes (tests, scripts) que aún no los pasen explícitamente.
+  style?: WatermarkStyle;
+  corner?: WatermarkCorner;
 }
 
 export interface WatermarkedImage {
@@ -68,14 +56,28 @@ async function toWatermarkedWebp(
   const w = width ?? maxEdge;
   const h = height ?? maxEdge;
 
+  const hasMark = watermark.enabled && Boolean(watermark.text);
   let pipeline = sharp(resizedBuffer);
-  if (watermark.enabled && watermark.text) {
-    pipeline = pipeline.composite([
-      { input: watermarkSvg(w, h, watermark.text), blend: "over" },
-    ]);
+  if (hasMark) {
+    const svg = buildWatermarkSvg(w, h, {
+      text: watermark.text,
+      style: watermark.style ?? "TILED",
+      corner: watermark.corner ?? "BOTTOM_RIGHT",
+    });
+    pipeline = pipeline.composite([{ input: Buffer.from(svg), blend: "over" }]);
   }
 
-  const buffer = await pipeline.webp({ quality }).toBuffer();
+  // Con marca incrustada, se sube algo la calidad/esfuerzo de
+  // codificación para compensar la pérdida extra que mete el propio
+  // composite (mezclar los píxeles de la marca con la foto) — sin marca,
+  // no hace falta tocar nada de lo que ya funcionaba bien.
+  const buffer = await pipeline
+    .webp(
+      hasMark
+        ? { quality: Math.min(100, quality + 5), effort: 6, smartSubsample: true }
+        : { quality },
+    )
+    .toBuffer();
 
   return { buffer, width: w, height: h };
 }

@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
+import { toWatermarkDisplaySettings } from "@/lib/watermark-svg";
 import { GalleryEditor } from "@/components/GalleryEditor";
 import {
   updateGalleryTitle,
@@ -28,14 +30,19 @@ export default async function EditGalleryPage({
 }) {
   const { id } = await params;
 
-  const gallery = await prisma.gallery.findUnique({
-    where: { id },
-    include: {
-      photos: { orderBy: { order: "asc" } },
-    },
-  });
+  const [gallery, settings] = await Promise.all([
+    prisma.gallery.findUnique({
+      where: { id },
+      include: {
+        photos: { orderBy: { order: "asc" } },
+      },
+    }),
+    getSettings(),
+  ]);
 
   if (!gallery) notFound();
+
+  const watermark = toWatermarkDisplaySettings(settings);
 
   const boundDelete = deleteGallery.bind(null, gallery.id);
   const boundUpload = uploadPhoto.bind(null, gallery.id);
@@ -44,7 +51,14 @@ export default async function EditGalleryPage({
   return (
     <div className="flex flex-col lg:flex-row">
       <aside className="shrink-0 border-border px-6 py-8 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:w-96 lg:overflow-y-auto lg:border-r lg:px-8 lg:py-10">
-        <div className="flex items-center justify-between">
+        <Link
+          href="/admin"
+          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          ← Panel de administración
+        </Link>
+
+        <div className="mt-3 flex items-center justify-between">
           <Link
             href={`/galeria/${gallery.slug}`}
             target="_blank"
@@ -104,6 +118,7 @@ export default async function EditGalleryPage({
           <PhotoManagerList
             photos={gallery.photos}
             layout={gallery.layout}
+            watermark={watermark}
             onReorder={boundReorder}
             onUpdateDescription={updatePhotoDescription}
             onToggleHomeFeatured={toggleHomeFeatured}

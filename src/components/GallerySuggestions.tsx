@@ -1,17 +1,24 @@
 import Link from "next/link";
 import type { GallerySuggestion } from "@/lib/gallery-suggestions";
+import { WatermarkOverlay } from "@/components/WatermarkOverlay";
+import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 
 export function GallerySuggestions({
   galleries,
+  watermark,
   heading = "Puede que también te guste",
 }: {
   galleries: GallerySuggestion[];
+  watermark: WatermarkDisplaySettings;
   heading?: string;
 }) {
   if (galleries.length === 0) return null;
 
   return (
-    <div className="mx-auto max-w-5xl px-6 pb-24">
+    // Mismo ancho que la cuadrícula de fotos (GalleryView.tsx), no el más
+    // estrecho de la cabecera/título: si no, los bordes de esta sección
+    // quedan más adentro que los de la propia galería justo encima.
+    <div className="mx-auto max-w-[1180px] px-6 pb-24">
       <h2 className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
         {heading}
       </h2>
@@ -25,7 +32,7 @@ export function GallerySuggestions({
               className="group block overflow-hidden rounded-[var(--photo-radius)] bg-surface"
             >
               <div
-                className="w-full overflow-hidden"
+                className="relative w-full overflow-hidden"
                 style={{
                   aspectRatio:
                     cover?.width && cover?.height
@@ -34,15 +41,22 @@ export function GallerySuggestions({
                 }}
               >
                 {cover ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={`/api/img/thumb/${cover.id}`}
-                    alt=""
-                    draggable={false}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full select-none object-contain transition-transform duration-500 group-hover:scale-105"
-                  />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/img/thumb/${cover.id}`}
+                      alt=""
+                      draggable={false}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full select-none object-contain transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <WatermarkOverlay
+                      watermark={watermark}
+                      width={cover.width}
+                      height={cover.height}
+                    />
+                  </>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                     Sin fotos

@@ -3,18 +3,39 @@
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import type { ColorPack, PhotoCorner } from "@/generated/prisma/enums";
+import type {
+  ColorPack,
+  PhotoCorner,
+  WatermarkMethod,
+  WatermarkStyle,
+  WatermarkCorner,
+} from "@/generated/prisma/enums";
 
 export async function updateWatermarkSettings(
   enabled: boolean,
   text: string,
+  method: WatermarkMethod,
+  style: WatermarkStyle,
+  corner: WatermarkCorner,
 ) {
+  const data = {
+    watermarkEnabled: enabled,
+    watermarkText: text,
+    watermarkMethod: method,
+    watermarkStyle: style,
+    watermarkCorner: corner,
+  };
   await prisma.settings.upsert({
     where: { id: 1 },
-    update: { watermarkEnabled: enabled, watermarkText: text },
-    create: { id: 1, watermarkEnabled: enabled, watermarkText: text },
+    update: data,
+    create: { id: 1, ...data },
   });
   revalidatePath("/admin/settings");
+  // Las fotos ya subidas no se regeneran solas: si se cambia de método
+  // (superpuesta/incrustada) o estilo, hace falta "Reprocesar fotos" para
+  // que el cambio se note en lo que ya había, igual que con la calidad o
+  // el propio texto de la marca.
+  revalidatePath("/", "layout");
 }
 
 // BETA: ver src/lib/vision.ts. El interruptor se puede activar sin la

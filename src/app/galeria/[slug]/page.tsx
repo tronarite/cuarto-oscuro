@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { toWatermarkDisplaySettings } from "@/lib/watermark-svg";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasGalleryUnlock } from "@/lib/gallery-access";
 import { getGallerySuggestions } from "@/lib/gallery-suggestions";
@@ -99,6 +100,7 @@ export default async function GalleryPage({
     getSettings(),
     getGallerySuggestions(gallery.id),
   ]);
+  const watermark = toWatermarkDisplaySettings(settings);
 
   return (
     <main className="relative">
@@ -125,10 +127,10 @@ export default async function GalleryPage({
       </div>
 
       <div className="px-6 pb-24">
-        <GalleryView photos={gallery.photos} layout={gallery.layout} />
+        <GalleryView photos={gallery.photos} layout={gallery.layout} watermark={watermark} />
       </div>
 
-      <GallerySuggestions galleries={suggestions} />
+      <GallerySuggestions galleries={suggestions} watermark={watermark} />
 
       <BackToTopButton />
     </main>

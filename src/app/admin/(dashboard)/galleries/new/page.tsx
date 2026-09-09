@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { createGallery, type FieldState } from "@/app/admin/(dashboard)/galleries/actions";
 
@@ -11,6 +12,12 @@ export default function NewGalleryPage() {
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center px-6">
+      <Link
+        href="/admin"
+        className="mb-4 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ← Panel de administración
+      </Link>
       <p className="text-sm text-muted-foreground">Nueva galería</p>
       <form action={formAction} className="mt-2 flex flex-col gap-6">
         <input

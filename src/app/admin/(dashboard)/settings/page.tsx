@@ -95,6 +95,9 @@ export default async function AdminSettingsPage() {
           <WatermarkSettingsForm
             initialEnabled={settings.watermarkEnabled}
             initialText={settings.watermarkText}
+            initialMethod={settings.watermarkMethod}
+            initialStyle={settings.watermarkStyle}
+            initialCorner={settings.watermarkCorner}
             onChange={updateWatermarkSettings}
           />
         </SettingsSection>

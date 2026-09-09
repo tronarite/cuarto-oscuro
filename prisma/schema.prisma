@@ -47,11 +47,44 @@ enum PhotoCorner {
   SQUARE
 }
 
+// Cómo se aplica la marca de agua: OVERLAY la pinta el navegador como
+// una capa encima de la foto (el archivo servido queda limpio, sin
+// tocar); EMBEDDED la incrusta en los píxeles al procesar la foto (ver
+// src/lib/watermark.ts) — es lo único que había antes de este enum.
+enum WatermarkMethod {
+  OVERLAY
+  EMBEDDED
+}
+
+// Qué forma tiene la marca (ver src/lib/watermark-svg.ts): TILED es el
+// patrón repetido en diagonal de siempre, FULL es una única marca grande
+// centrada cubriendo toda la foto, CORNER es una marca pequeña en una
+// esquina (ver WatermarkCorner).
+enum WatermarkStyle {
+  TILED
+  FULL
+  CORNER
+}
+
+enum WatermarkCorner {
+  TOP_LEFT
+  TOP_RIGHT
+  BOTTOM_LEFT
+  BOTTOM_RIGHT
+}
+
 // Fila única con los ajustes globales del sitio (marca de agua, etc.).
 model Settings {
   id               Int     @id @default(1)
   watermarkEnabled Boolean @default(true)
   watermarkText    String  @default("© Galería fotográfica")
+  // Los tres siguientes son @default = el comportamiento que había antes
+  // de que existieran (incrustada, patrón repetido, esquina irrelevante
+  // salvo que se cambie a CORNER), para que la migración no cambie nada
+  // visualmente hasta que el admin toque el ajuste a propósito.
+  watermarkMethod  WatermarkMethod  @default(EMBEDDED)
+  watermarkStyle   WatermarkStyle   @default(TILED)
+  watermarkCorner  WatermarkCorner  @default(BOTTOM_RIGHT)
 
   // Contraseña del panel de administración (bcrypt). null = todavía sin
   // configurar: proxy.ts manda a /admin/setup para elegirla la primera
