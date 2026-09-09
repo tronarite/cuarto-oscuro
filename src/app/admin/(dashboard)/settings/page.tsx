@@ -141,6 +141,19 @@ export default async function AdminSettingsPage() {
               initialCorner={settings.watermarkCorner}
               onChange={updateWatermarkSettings}
             />
+            {/* Reprocesar fotos vive aquí y no en su propia sección: hoy
+                lo único que cambia al reprocesar es justo esto (método,
+                estilo y calidad de la marca de agua), así que tiene más
+                sentido junto al ajuste que de verdad afecta, no suelto
+                en otro sitio. */}
+            <div className="mt-6 max-w-md border-t border-border pt-6">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Las fotos ya subidas no cambian solas al tocar estos
+                ajustes: pulsa aquí para regenerarlas todas a partir de su
+                original, aplicando la marca de agua actual.
+              </p>
+              <ReprocessPhotosButton />
+            </div>
           </SettingsSection>
         </SettingsGroup>
 
@@ -153,13 +166,6 @@ export default async function AdminSettingsPage() {
               initialEnabled={settings.autoCaptionEnabled}
               onChange={updateAutoCaption}
             />
-          </SettingsSection>
-
-          <SettingsSection
-            title="Reprocesar fotos"
-            description="Las fotos ya subidas no cambian solas al tocar estos ajustes o la calidad: pulsa aquí para regenerarlas todas a partir de su original, aplicando la marca de agua y la calidad actuales."
-          >
-            <ReprocessPhotosButton />
           </SettingsSection>
         </SettingsGroup>
 
