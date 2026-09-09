@@ -4,16 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAdmin } from "@/app/admin/actions";
 
-// Resalta la sección activa de la cabecera del panel (hoy solo hay
-// "Ajustes" aparte del propio inicio) para que quede claro dónde se
-// está, sobre todo ahora que Ajustes vive en una página propia con
-// bastante contenido debajo.
+// Resalta la sección activa de la cabecera del panel para que quede
+// claro dónde se está, sobre todo ahora que Ajustes vive en una página
+// propia con bastante contenido debajo. "Galerías" lleva al mismo sitio
+// que el logo/título de la cabecera (/admin) — se añade igualmente como
+// enlace de texto para que tenga el mismo peso visual que "Ajustes" en
+// vez de ser la única sección sin su propio botón.
 export function AdminNavLinks() {
   const pathname = usePathname();
   const onSettings = pathname?.startsWith("/admin/settings");
+  const onGalleries = !onSettings;
 
   return (
     <div className="flex items-center gap-4">
+      <Link
+        href="/admin"
+        className={`text-sm transition-all active:scale-95 ${
+          onGalleries
+            ? "font-medium text-foreground"
+            : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        Galerías
+      </Link>
       <Link
         href="/admin/settings"
         className={`text-sm transition-all active:scale-95 ${

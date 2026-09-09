@@ -15,10 +15,15 @@ export function WatermarkOverlay({
   watermark,
   width,
   height,
+  fit = "contain",
 }: {
   watermark: WatermarkDisplaySettings;
   width: number | null | undefined;
   height: number | null | undefined;
+  // "cover" cuando el <img> vecino usa object-cover (modo "ampliar
+  // hasta llenar la pantalla" del visor/presentación) — ver fit en
+  // buildWatermarkSvg.
+  fit?: "contain" | "cover";
 }) {
   if (!watermark.enabled || watermark.method !== "OVERLAY" || !watermark.text) {
     return null;
@@ -29,6 +34,7 @@ export function WatermarkOverlay({
     height || 1200,
     { text: watermark.text, style: watermark.style, corner: watermark.corner },
     "responsive",
+    fit,
   );
 
   return (

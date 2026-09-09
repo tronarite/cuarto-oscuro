@@ -146,6 +146,13 @@ export function buildWatermarkSvg(
   // que el texto/patrón tenga el tamaño y posición correctos) es igual
   // en los dos casos.
   sizing: "raster" | "responsive" = "raster",
+  // Debe coincidir con el object-fit real del <img> al que acompaña:
+  // "contain" (por defecto, xMidYMid meet) para el object-contain de
+  // siempre, "cover" (xMidYMid slice) para el modo "ampliar hasta llenar
+  // la pantalla" (ver fillMode en GalleryView/PresentationMode) — si no
+  // coincidieran, la marca quedaría desplazada de la zona de la foto
+  // que de verdad se ve.
+  fit: "contain" | "cover" = "contain",
 ): string {
   const text = escapeXml(opts.text);
   const inner =
@@ -157,10 +164,6 @@ export function buildWatermarkSvg(
 
   const svgWidth = sizing === "responsive" ? "100%" : width;
   const svgHeight = sizing === "responsive" ? "100%" : height;
-  // preserveAspectRatio por defecto (xMidYMid meet, no "none"): a
-  // propósito — las fotos se muestran con object-contain, así que dejar
-  // que el SVG también "encaje centrado" en vez de estirarse hace que la
-  // marca caiga justo sobre el área visible real de la foto (y no
-  // deformada) incluso cuando el hueco del mosaico tiene otra proporción.
-  return `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+  const preserveAspectRatio = fit === "cover" ? "xMidYMid slice" : "xMidYMid meet";
+  return `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="${preserveAspectRatio}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
 }

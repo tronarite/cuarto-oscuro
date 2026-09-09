@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { exifLine } from "@/lib/exif-format";
-import { ChevronIcon } from "@/components/icons";
+import { ChevronIcon, ExpandIcon } from "@/components/icons";
 import { WatermarkOverlay } from "@/components/WatermarkOverlay";
 import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 import type { GalleryPhoto } from "@/components/GalleryView";
+import { useAutoHideControls } from "@/lib/use-auto-hide-controls";
 
 const SLIDE_DURATION_MS = 6000;
 
@@ -14,11 +15,18 @@ export function PresentationMode({
   photos,
   startId,
   watermark,
+  fillMode,
+  onToggleFillMode,
   onClose,
 }: {
   photos: GalleryPhoto[];
   startId?: string | null;
   watermark: WatermarkDisplaySettings;
+  // Ver fillMode en GalleryView.tsx: se controla desde ahí para que el
+  // ajuste sea el mismo si se pasa del visor de una foto a presentación
+  // (o al revés) y entre visitas.
+  fillMode: boolean;
+  onToggleFillMode: () => void;
   onClose: () => void;
 }) {
   const startIndex = Math.max(
@@ -75,11 +83,24 @@ export function PresentationMode({
   }, [next, prev, onClose]);
 
   const photo = photos[index];
+
+  // Controles tipo YouTube: se ven al entrar/mover el ratón y se ocultan
+  // solos tras un momento quieto — mismo hook que en GalleryView.tsx.
+  const { visible: controlsVisible, onMouseMove: showControls } =
+    useAutoHideControls(photo?.id);
+  const controlsFade = `transition-opacity duration-300 ${
+    controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"
+  }`;
+
   if (!photo) return null;
   const specs = exifLine(photo);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-[60] overflow-hidden bg-black">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[60] overflow-hidden bg-black"
+      onMouseMove={showControls}
+    >
       {/* Mismo estilo "ventana completa" que el visor normal
           (GalleryView.tsx): la foto llena toda la pantalla y los
           controles flotan encima como píldoras traslúcidas, en vez de
@@ -99,19 +120,43 @@ export function PresentationMode({
             alt={photo.description ?? ""}
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
-            className="h-full w-full select-none object-contain"
+            className={`h-full w-full select-none ${
+              fillMode ? "object-cover" : "object-contain"
+            }`}
           />
-          <WatermarkOverlay watermark={watermark} width={photo.width} height={photo.height} />
+          <WatermarkOverlay
+            watermark={watermark}
+            width={photo.width}
+            height={photo.height}
+            fit={fillMode ? "cover" : "contain"}
+          />
         </motion.div>
       </AnimatePresence>
 
-      <p className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+      <p
+        className={`absolute left-16 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm ${controlsFade}`}
+      >
         {index + 1} / {photos.length}
       </p>
       <button
         type="button"
+        onClick={onToggleFillMode}
+        aria-label={
+          fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
+        }
+        title={fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"}
+        className={`absolute left-4 top-4 rounded-full p-2 backdrop-blur-sm transition-all active:scale-90 ${controlsFade} ${
+          fillMode
+            ? "bg-white text-black"
+            : "bg-black/50 text-white/80 hover:bg-black/70 hover:text-accent"
+        }`}
+      >
+        <ExpandIcon />
+      </button>
+      <button
+        type="button"
         onClick={onClose}
-        className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+        className={`absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90 ${controlsFade}`}
       >
         salir ✕
       </button>
@@ -122,7 +167,7 @@ export function PresentationMode({
             type="button"
             onClick={prev}
             aria-label="Anterior"
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+            className={`absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90 ${controlsFade}`}
           >
             <ChevronIcon direction="left" />
           </button>
@@ -130,7 +175,7 @@ export function PresentationMode({
             type="button"
             onClick={next}
             aria-label="Siguiente"
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+            className={`absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90 ${controlsFade}`}
           >
             <ChevronIcon direction="right" />
           </button>
@@ -140,14 +185,14 @@ export function PresentationMode({
       <button
         type="button"
         onClick={() => setPlaying((p) => !p)}
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-95"
+        className={`absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-95 ${controlsFade}`}
       >
         {playing ? "pausa" : "reanudar"}
       </button>
 
       {(photo.description || specs.length > 0) && (
         <div
-          className="absolute inset-x-4 bottom-16 flex justify-center sm:bottom-20"
+          className={`absolute inset-x-4 bottom-16 flex justify-center sm:bottom-20 ${controlsFade}`}
           // Mismo motivo que en GalleryView.tsx: sin esto, seleccionar el
           // texto compite con los atajos de teclado/clicks del visor.
           onClick={(e) => e.stopPropagation()}

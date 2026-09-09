@@ -8,9 +8,26 @@ import { seededRandom } from "@/lib/seeded-random";
 import { slotSizeForIndex, type GalleryLayout } from "@/lib/grid-templates";
 import { applyPinning } from "@/lib/photo-order";
 import { PresentationMode } from "@/components/PresentationMode";
-import { ChevronIcon } from "@/components/icons";
+import { ChevronIcon, ExpandIcon } from "@/components/icons";
 import { WatermarkOverlay } from "@/components/WatermarkOverlay";
 import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
+import { useAutoHideControls } from "@/lib/use-auto-hide-controls";
+
+// Preferencia de "ampliar hasta llenar la pantalla" (object-cover, sin
+// franjas negras, recortando lo que sobre) — compartida a propósito
+// entre el visor de una foto y el modo presentación (se pasa a
+// PresentationMode como prop): alternar en uno se nota en el otro, y se
+// recuerda entre visitas.
+const FILL_MODE_KEY = "cuarto-oscuro:photo-fill-mode";
+
+function readFillMode(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(FILL_MODE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export interface GalleryPhoto extends ExifSource {
   id: string;
@@ -120,6 +137,28 @@ export function GalleryView({
   const [presenting, setPresenting] = useState(false);
   const openPhoto = photos.find((p) => p.id === openId) ?? null;
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const [fillMode, setFillMode] = useState(readFillMode);
+  function toggleFillMode() {
+    setFillMode((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(FILL_MODE_KEY, next ? "1" : "0");
+      } catch {
+        // Sin localStorage (privado, cuota...) el ajuste simplemente no
+        // sobrevive a esta sesión — no es motivo para romper el toggle.
+      }
+      return next;
+    });
+  }
+
+  // Controles del visor (flechas, cerrar, caption...) tipo YouTube: se
+  // ven al abrir/mover el ratón y se ocultan solos tras un momento quieto.
+  const { visible: controlsVisible, onMouseMove: showControls } =
+    useAutoHideControls(openId);
+  const controlsFade = `transition-opacity duration-300 ${
+    controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"
+  }`;
 
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -282,6 +321,8 @@ export function GalleryView({
         <PresentationMode
           photos={ordered}
           watermark={watermark}
+          fillMode={fillMode}
+          onToggleFillMode={toggleFillMode}
           onClose={() => setPresenting(false)}
         />
       )}
@@ -290,6 +331,7 @@ export function GalleryView({
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           onClick={closeLightbox}
+          onMouseMove={showControls}
         >
           <div
             className="relative h-full w-full overflow-hidden"
@@ -319,12 +361,15 @@ export function GalleryView({
                 alt={openPhoto.description ?? ""}
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}
-                className="h-full w-full select-none object-contain"
+                className={`h-full w-full select-none ${
+                  fillMode ? "object-cover" : "object-contain"
+                }`}
               />
               <WatermarkOverlay
                 watermark={watermark}
                 width={openPhoto.width}
                 height={openPhoto.height}
+                fit={fillMode ? "cover" : "contain"}
               />
             </div>
             {ordered.length > 1 && (
@@ -333,7 +378,7 @@ export function GalleryView({
                   type="button"
                   onClick={goPrev}
                   aria-label="Foto anterior"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90 ${controlsFade}`}
                 >
                   <ChevronIcon direction="left" />
                 </button>
@@ -341,7 +386,7 @@ export function GalleryView({
                   type="button"
                   onClick={goNext}
                   aria-label="Foto siguiente"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90 ${controlsFade}`}
                 >
                   <ChevronIcon direction="right" />
                 </button>
@@ -349,19 +394,36 @@ export function GalleryView({
             )}
             <button
               type="button"
+              onClick={toggleFillMode}
+              aria-label={
+                fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"
+              }
+              title={fillMode ? "Ajustar la foto a la pantalla" : "Ampliar hasta llenar la pantalla"}
+              className={`absolute left-4 top-4 rounded-full p-2 backdrop-blur-sm transition-all active:scale-90 ${controlsFade} ${
+                fillMode
+                  ? "bg-white text-black"
+                  : "bg-black/50 text-white/80 hover:bg-black/70 hover:text-accent"
+              }`}
+            >
+              <ExpandIcon />
+            </button>
+            <button
+              type="button"
               onClick={closeLightbox}
-              className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90"
+              className={`absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:bg-black/70 hover:text-accent active:scale-90 ${controlsFade}`}
             >
               cerrar ✕
             </button>
             {ordered.length > 1 && currentIndex !== -1 && (
-              <p className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm">
+              <p
+                className={`absolute left-16 top-4 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white/80 backdrop-blur-sm ${controlsFade}`}
+              >
                 {currentIndex + 1} / {ordered.length}
               </p>
             )}
             {(openPhoto.description || exifLine(openPhoto).length > 0) && (
               <div
-                className="absolute inset-x-4 bottom-3 flex justify-center sm:bottom-4"
+                className={`absolute inset-x-4 bottom-3 flex justify-center sm:bottom-4 ${controlsFade}`}
                 // El resto del visor tiene gestos de zoom/pan colgados de
                 // este mismo contenedor (onDoubleClick, onWheel,
                 // onPointerDown): sin frenarlos aquí, cualquier intento de
