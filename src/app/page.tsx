@@ -3,6 +3,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { toWatermarkDisplaySettings } from "@/lib/watermark-svg";
+import { truncateForMeta } from "@/lib/text";
+import { resolveSiteUrl } from "@/lib/site-url";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FeaturedRail } from "@/components/FeaturedRail";
 import { BackToTopButton } from "@/components/BackToTopButton";
@@ -28,11 +30,14 @@ export async function generateMetadata(): Promise<Metadata> {
       orderBy: { createdAt: "desc" },
     }),
   ]);
-  const description = settings.siteSubtitle || "Galería fotográfica personal";
+  const description = truncateForMeta(
+    settings.siteSubtitle || "Galería fotográfica personal",
+  );
 
   return {
     title: settings.siteTitle,
     description,
+    metadataBase: new URL(await resolveSiteUrl()),
     openGraph: {
       title: settings.siteTitle,
       description,

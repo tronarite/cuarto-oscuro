@@ -6,6 +6,8 @@ import { toWatermarkDisplaySettings } from "@/lib/watermark-svg";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasGalleryUnlock } from "@/lib/gallery-access";
 import { getGallerySuggestions } from "@/lib/gallery-suggestions";
+import { truncateForMeta } from "@/lib/text";
+import { resolveSiteUrl } from "@/lib/site-url";
 import { PasswordGate } from "@/components/PasswordGate";
 import { GalleryView } from "@/components/GalleryView";
 import { GalleryDescription } from "@/components/GalleryDescription";
@@ -50,11 +52,14 @@ export async function generateMetadata({
   }
 
   const cover = gallery.photos.find((p) => p.homeFeatured) ?? gallery.photos[0];
-  const description = gallery.description || "Galería fotográfica personal.";
+  const description = truncateForMeta(
+    gallery.description || "Galería fotográfica personal.",
+  );
 
   return {
     title: gallery.title,
     description,
+    metadataBase: new URL(await resolveSiteUrl()),
     openGraph: {
       title: gallery.title,
       description,

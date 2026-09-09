@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { getSettings } from "@/lib/settings";
+import { truncateForMeta } from "@/lib/text";
 import { PoweredByBadge } from "@/components/PoweredByBadge";
 import { ToastProvider } from "@/components/ToastProvider";
 import "./globals.css";
@@ -39,7 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
     // algún generateMetadata use una ruta relativa en openGraph.images.
     metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
     title: settings.siteTitle,
-    description: settings.siteSubtitle || "Galería fotográfica personal",
+    description: truncateForMeta(
+      settings.siteSubtitle || "Galería fotográfica personal",
+    ),
   };
 }
 
