@@ -154,6 +154,19 @@ export function MasonryGrid<T extends MasonryItem>({
               transform: `translate(${p.x}px, ${p.y}px)`,
               transition:
                 "transform 0.3s ease, width 0.3s ease, height 0.3s ease",
+              // Con muchas fotos montadas de golpe (todo lo que entra en
+              // `items`, no solo lo visible), el navegador seguía
+              // calculando estilo/layout/pintado de las que quedan muy
+              // lejos del viewport — eso es lo que se notaba como tirones
+              // al bajar rápido, aparte de la propia descarga de las
+              // imágenes. content-visibility:auto le dice que se salte
+              // ese trabajo mientras el hueco esté lejos de la pantalla;
+              // contain-intrinsic-size le da el alto real de antemano
+              // (ya lo calculamos aquí) para que no salte al entrar en
+              // vista. Sin soporte en el navegador, simplemente se
+              // ignora — no rompe nada.
+              contentVisibility: "auto",
+              containIntrinsicSize: `${p.width}px ${p.height}px`,
             }}
           >
             {renderItem(item)}

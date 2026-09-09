@@ -43,9 +43,13 @@ type LaidOutPhoto = GalleryPhoto & MasonryItem;
 // Cuántas fotos se montan de entrada y cuántas se añaden cada vez que
 // se llega cerca del final: bajar rápido por una galería con decenas de
 // fotos ya no dispara la descarga+decodificación de todas a la vez,
-// solo de las que realmente hace falta ver.
+// solo de las que realmente hace falta ver. Lotes más pequeños (antes
+// 18) reparten mejor la carga en un scroll rápido y continuo: con lotes
+// grandes, cada vez que el centinela entraba en el margen se montaban
+// muchas imágenes de golpe, notándose como un tirón puntual en vez de
+// una carga fluida.
 const INITIAL_VISIBLE = 24;
-const LOAD_MORE_BATCH = 18;
+const LOAD_MORE_BATCH = 12;
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
