@@ -36,6 +36,11 @@ export function PresentationMode({
   const [index, setIndex] = useState(startIndex === -1 ? 0 : startIndex);
   const [playing, setPlaying] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  // ¿Llegamos a entrar de verdad en pantalla completa? En iPhone la API
+  // no existe para elementos que no sean <video>, así que nunca entra —
+  // y ahí no hay que cerrar la presentación cuando "se sale" de pantalla
+  // completa, porque eso podría dispararse por cualquier otro motivo.
+  const enteredFullscreenRef = useRef(false);
 
   const next = useCallback(() => {
     setIndex((i) => (i + 1) % photos.length);
@@ -46,8 +51,19 @@ export function PresentationMode({
   }, [photos.length]);
 
   useEffect(() => {
-    containerRef.current?.requestFullscreen?.().catch(() => {});
+    const el = containerRef.current;
+    // Sin API de pantalla completa (iPhone) no pasa nada: el overlay ya
+    // es fixed inset-0, cubre toda la pantalla igual — solo se pierde
+    // ocultar la barra del navegador.
+    if (!el?.requestFullscreen) return;
+    let cancelled = false;
+    el.requestFullscreen()
+      .then(() => {
+        if (!cancelled) enteredFullscreenRef.current = true;
+      })
+      .catch(() => {});
     return () => {
+      cancelled = true;
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
@@ -56,7 +72,11 @@ export function PresentationMode({
 
   useEffect(() => {
     function onFullscreenChange() {
-      if (!document.fullscreenElement) onClose();
+      // Salir de pantalla completa (Esc, gesto del navegador) cierra la
+      // presentación — pero solo si habíamos entrado nosotros.
+      if (enteredFullscreenRef.current && !document.fullscreenElement) {
+        onClose();
+      }
     }
     document.addEventListener("fullscreenchange", onFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
@@ -101,6 +121,8 @@ export function PresentationMode({
     captionVisible ? "opacity-100" : "pointer-events-none opacity-0"
   }`;
 
+  // Mover el ratón (escritorio) o tocar la pantalla (móvil, donde
+  // mousemove no existe) reaparece los controles.
   function handlePointerActivity() {
     showControls();
     showCaption();
@@ -114,6 +136,7 @@ export function PresentationMode({
       ref={containerRef}
       className="fixed inset-0 z-[60] overflow-hidden bg-black"
       onMouseMove={handlePointerActivity}
+      onPointerDown={handlePointerActivity}
     >
       {/* Mismo estilo "ventana completa" que el visor normal
           (GalleryView.tsx): la foto llena toda la pantalla y los

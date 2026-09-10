@@ -367,6 +367,7 @@ export function GalleryView({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           onClick={closeLightbox}
           onMouseMove={handlePointerActivity}
+          onPointerDown={handlePointerActivity}
         >
           <div
             className="relative h-full w-full overflow-hidden"
