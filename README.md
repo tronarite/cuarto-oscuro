@@ -201,10 +201,12 @@ database — the failure mode that once broke a from-scratch build.
 ## Backups
 
 `scripts/backup.sh` (POSIX) and `scripts/backup.ps1` (Windows / Docker
-deployment) snapshot the SQLite database — using SQLite's online backup
-so the app isn't blocked — and the `uploads/` folder into a timestamped
-`.tar.gz` under `backups/`, keeping the last 14 by default
-(`BACKUP_KEEP`).
+deployment) pack the SQLite database and the `uploads/` folder into a
+timestamped `.tar.gz` under `backups/`, keeping the last 14 by default
+(`BACKUP_KEEP` / `-Keep`). `backup.sh` uses SQLite's online backup so the
+app isn't blocked; `backup.ps1` stops the container for the few seconds
+it takes to copy the (tiny) database, then restarts it (`-NoStop` to skip
+that).
 
 Schedule it once a day, e.g. with cron:
 
