@@ -101,7 +101,9 @@ export function AboutMeForm({
       {savingEnabled && <p className="text-xs text-muted-foreground">Guardando…</p>}
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm text-muted-foreground">Texto del botón</span>
+        <span className="text-sm text-muted-foreground">
+          Texto del enlace y del título de la página
+        </span>
         <input
           type="text"
           value={buttonLabel}

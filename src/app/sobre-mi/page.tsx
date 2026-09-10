@@ -23,7 +23,7 @@ export default async function AboutPage() {
 
       <div className="mx-auto max-w-3xl px-6 pb-24 pt-16">
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
-          Sobre mí
+          {settings.aboutButtonLabel}
         </h1>
 
         <div className="mt-10 flex flex-col gap-10 md:flex-row md:items-start">

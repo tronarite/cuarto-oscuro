@@ -111,8 +111,9 @@ model Settings {
   aboutPhotoPath   String?
   aboutPhotoWidth  Int?
   aboutPhotoHeight Int?
-  // Texto del botón/enlace de la portada hacia "Sobre mí" (el título de
-  // la propia página se queda fijo, esto es solo la etiqueta del botón).
+  // Texto del enlace de la portada hacia la página "Sobre mí" — y también
+  // el encabezado (h1) de esa página, para que las dos cosas digan
+  // siempre lo mismo.
   aboutButtonLabel String @default("Sobre mí")
 
   colorPack   ColorPack   @default(WARM)
