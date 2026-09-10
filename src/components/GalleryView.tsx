@@ -12,6 +12,7 @@ import { ChevronIcon, ExpandIcon } from "@/components/icons";
 import { WatermarkOverlay } from "@/components/WatermarkOverlay";
 import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
 import { useAutoHideControls } from "@/lib/use-auto-hide-controls";
+import { thumbSrcSet } from "@/lib/img";
 
 // Preferencia de "ampliar hasta llenar la pantalla" (object-cover, sin
 // franjas negras, recortando lo que sobre) — compartida a propósito
@@ -104,6 +105,8 @@ function Tile({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={`/api/img/thumb/${photo.id}`}
+        srcSet={thumbSrcSet(photo.id)}
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 34vw, 290px"
         alt={photo.description ?? ""}
         draggable={false}
         loading="lazy"

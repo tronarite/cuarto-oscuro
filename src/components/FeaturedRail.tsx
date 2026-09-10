@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { WatermarkOverlay } from "@/components/WatermarkOverlay";
 import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
+import { thumbSrcSet } from "@/lib/img";
 
 export interface RailPhoto {
   id: string;
@@ -49,8 +50,12 @@ function RailPhotoCard({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={`/api/img/thumb/${photo.id}`}
+        srcSet={thumbSrcSet(photo.id)}
+        sizes="(max-width: 1024px) 45vw, 380px"
         alt=""
         draggable={false}
+        loading="lazy"
+        decoding="async"
         className="h-full w-full select-none object-contain"
       />
       <WatermarkOverlay watermark={watermark} width={photo.width} height={photo.height} />

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { GallerySuggestion } from "@/lib/gallery-suggestions";
 import { WatermarkOverlay } from "@/components/WatermarkOverlay";
 import type { WatermarkDisplaySettings } from "@/lib/watermark-svg";
+import { thumbSrcSet } from "@/lib/img";
 
 export function GallerySuggestions({
   galleries,
@@ -45,6 +46,8 @@ export function GallerySuggestions({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`/api/img/thumb/${cover.id}`}
+                      srcSet={thumbSrcSet(cover.id)}
+                      sizes="(max-width: 640px) 100vw, 560px"
                       alt=""
                       draggable={false}
                       loading="lazy"
