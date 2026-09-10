@@ -3,6 +3,11 @@ import { prisma } from "@/lib/db";
 import { reorderGalleries } from "./galleries/actions";
 import { GalleryGrid } from "@/components/GalleryGrid";
 
+// Panel de administración: siempre datos en vivo, nunca prerenderizado
+// estático (si no, en el build de Docker quedaría congelado con la base
+// de datos vacía de ese momento).
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const galleries = await prisma.gallery.findMany({
     orderBy: { order: "asc" },

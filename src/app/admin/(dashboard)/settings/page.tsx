@@ -19,6 +19,11 @@ import { ColorPackForm } from "@/components/ColorPackForm";
 import { PhotoCornerForm } from "@/components/PhotoCornerForm";
 import { AutoCaptionForm } from "@/components/AutoCaptionForm";
 
+// Panel de administración: siempre datos en vivo, nunca prerenderizado
+// estático (si no, en el build de Docker quedaría congelado con la base
+// de datos vacía de ese momento).
+export const dynamic = "force-dynamic";
+
 function SettingsSection({
   title,
   description,
