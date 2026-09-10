@@ -222,6 +222,52 @@ export async function deletePhoto(photoId: string) {
   revalidatePath(`/admin/galleries/${photo.galleryId}`);
 }
 
+// Borra varias fotos de una vez (selección múltiple en el editor). Igual
+// que deletePhoto pero renumerando `order` una sola vez al final, en vez
+// de una pasada por foto.
+export async function deletePhotos(photoIds: string[]) {
+  if (photoIds.length === 0) return;
+
+  const photos = await prisma.photo.findMany({
+    where: { id: { in: photoIds } },
+    select: {
+      id: true,
+      galleryId: true,
+      originalPath: true,
+      displayPath: true,
+      thumbPath: true,
+    },
+  });
+  if (photos.length === 0) return;
+
+  const uploadsRoot = path.join(process.cwd(), "uploads");
+  for (const photo of photos) {
+    await deleteFileIfExists(path.join(uploadsRoot, photo.originalPath));
+    await deleteFileIfExists(path.join(uploadsRoot, photo.displayPath));
+    if (photo.thumbPath) {
+      await deleteFileIfExists(path.join(uploadsRoot, photo.thumbPath));
+    }
+  }
+
+  await prisma.photo.deleteMany({ where: { id: { in: photos.map((p) => p.id) } } });
+
+  const galleryIds = [...new Set(photos.map((p) => p.galleryId))];
+  for (const galleryId of galleryIds) {
+    const siblings = await prisma.photo.findMany({
+      where: { galleryId },
+      orderBy: { order: "asc" },
+      select: { id: true },
+    });
+    await prisma.$transaction(
+      siblings.map((s, i) =>
+        prisma.photo.update({ where: { id: s.id }, data: { order: i } }),
+      ),
+    );
+    revalidatePath(`/admin/galleries/${galleryId}`);
+  }
+  revalidatePath("/");
+}
+
 // Reordena las fotos no ancladas: recibe todos sus ids en el nuevo orden
 // relativo (calculado en el cliente al soltar, como en una lista normal
 // donde arrastrar inserta en el hueco, no solo intercambia dos) y

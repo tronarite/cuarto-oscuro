@@ -18,6 +18,7 @@ import {
   toggleHomeFeatured,
   togglePinned,
   deletePhoto,
+  deletePhotos,
   reorderPhotos,
 } from "./photo-actions";
 import { PhotoUploadForm } from "@/components/PhotoUploadForm";
@@ -124,6 +125,7 @@ export default async function EditGalleryPage({
             onToggleHomeFeatured={toggleHomeFeatured}
             onTogglePinned={togglePinned}
             onDelete={deletePhoto}
+            onBulkDelete={deletePhotos}
           />
         </div>
       </div>
