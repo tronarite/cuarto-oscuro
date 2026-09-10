@@ -14,9 +14,11 @@
 #   -NoStop     no parar el contenedor (copia en caliente; solo si te
 #               vale con una copia no perfectamente atómica)
 #
-# Programarlo con el Programador de tareas de Windows (diario a las 4:00):
-#   schtasks /Create /TN "Cuarto Oscuro backup" /SC DAILY /ST 04:00 /RL HIGHEST ^
-#     /TR "powershell -ExecutionPolicy Bypass -File C:\OtroProgramas\PhotoPorfolio-VirtualGallery\scripts\backup.ps1"
+# Programarlo con el Programador de tareas de Windows (diario a las 4:00,
+# corriendo en la sesión del usuario que tiene Docker Desktop):
+#   schtasks /Create /TN "Cuarto Oscuro backup" /SC DAILY /ST 04:00 ^
+#     /RL HIGHEST /RU "%USERDOMAIN%\%USERNAME%" /IT /F ^
+#     /TR "powershell -ExecutionPolicy Bypass -NoProfile -File \"C:\OtroProgramas\PhotoPorfolio-VirtualGallery\scripts\backup.ps1\""
 
 param(
   [string]$BackupDir = "",
