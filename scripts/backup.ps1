@@ -34,18 +34,10 @@ $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $snapshotHost = Join-Path $ProjectDir "data\_snapshot.db"
 if (Test-Path $snapshotHost) { Remove-Item $snapshotHost -Force }
 
-# Backup online de SQLite desde dentro del contenedor: escribe la
+# Backup online de SQLite desde dentro del contenedor (el script está en
+# la imagen porque el Dockerfile copia todo el repo): escribe la
 # instantánea en /app/data, que está montado en .\data del host.
-$node = @'
-const D = require("better-sqlite3");
-const src = process.env.DATABASE_URL.replace(/^file:/, "");
-const db = new D(src, { readonly: true });
-db.backup("/app/data/_snapshot.db")
-  .then(() => { db.close(); console.log("snapshot ok"); })
-  .catch((e) => { console.error(e); process.exit(1); });
-'@
-
-docker compose exec -T $Service node -e $node
+docker compose exec -T $Service node /app/scripts/db-online-backup.cjs /app/data/_snapshot.db
 if ($LASTEXITCODE -ne 0) { throw "El backup dentro del contenedor falló (código $LASTEXITCODE)" }
 if (-not (Test-Path $snapshotHost)) { throw "No apareció data\_snapshot.db tras el backup" }
 

@@ -58,14 +58,17 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/cuarto-oscuro-backup.XXXXXX")
 trap 'rm -rf "$WORK"' EXIT
 
-# Instantánea consistente de la base: sqlite3 .backup si está disponible
-# (recomendado, no bloquea a la app); si no, una copia directa —
-# aceptable aquí porque las escrituras son solo del panel de admin y muy
-# esporádicas.
-if command -v sqlite3 >/dev/null 2>&1; then
+# Instantánea consistente de la base con el backup online de SQLite
+# (no bloquea a la app). Usa el mismo script que la versión de Docker,
+# apoyándose en better-sqlite3 de node_modules; si no está (node_modules
+# sin instalar), cae a sqlite3 CLI y, en último caso, a una copia directa
+# — aceptable aquí porque solo escribe el panel de admin y rara vez.
+if node -e "require('better-sqlite3')" >/dev/null 2>&1; then
+  DATABASE_URL="file:$DB_PATH" node "$PROJECT_DIR/scripts/db-online-backup.cjs" "$WORK/db.sqlite"
+elif command -v sqlite3 >/dev/null 2>&1; then
   sqlite3 "$DB_PATH" ".backup '$WORK/db.sqlite'"
 else
-  echo "backup: sqlite3 no está instalado, copio el fichero directamente" >&2
+  echo "backup: ni better-sqlite3 ni sqlite3 disponibles, copio el fichero directamente" >&2
   cp "$DB_PATH" "$WORK/db.sqlite"
 fi
 
