@@ -50,6 +50,9 @@ next-env.d.ts
 # uploads (fotos originales y procesadas, nunca al repo)
 /uploads
 
+# copias de seguridad generadas por scripts/backup.*
+/backups
+
 # skills de asistentes de IA (documentación de referencia instalada por
 # herramientas de desarrollo, no forma parte del proyecto)
 /.agents

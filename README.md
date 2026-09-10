@@ -187,6 +187,35 @@ npm run dev
 Open `http://localhost:3000/admin` — the first visit prompts you to create
 the admin password. From there, create a gallery and upload photos.
 
+## Tests
+
+```bash
+npm test
+```
+
+Vitest, covering the pure helpers (`truncateForMeta`, `thumbSrcSet`,
+`applyPinning`, the login rate limiter, `buildWatermarkSvg`) plus a
+regression test that runs the whole migration chain against a fresh
+database — the failure mode that once broke a from-scratch build.
+
+## Backups
+
+`scripts/backup.sh` (POSIX) and `scripts/backup.ps1` (Windows / Docker
+deployment) snapshot the SQLite database — using SQLite's online backup
+so the app isn't blocked — and the `uploads/` folder into a timestamped
+`.tar.gz` under `backups/`, keeping the last 14 by default
+(`BACKUP_KEEP`).
+
+Schedule it once a day, e.g. with cron:
+
+```
+0 4 * * * cd /path/to/project && sh scripts/backup.sh >> backups/backup.log 2>&1
+```
+
+or the Windows Task Scheduler (`schtasks /Create …`, see the header of
+`backup.ps1`). Restoring is just extracting the archive: `db.sqlite` back
+to the path in `DATABASE_URL`, `uploads/` back in place.
+
 ## Project structure
 
 ```
@@ -202,6 +231,8 @@ src/
 prisma/
   schema.prisma               Gallery, Photo, Settings models
   migrations/                 Hand-written, reviewed SQL migrations
+scripts/                      backup.sh / backup.ps1
+tests/                        Vitest suite
 ```
 
 ## License
