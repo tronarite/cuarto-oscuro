@@ -170,6 +170,9 @@ Edit `.env`:
   feature (Settings → Photos). Free, no card required, from
   [Google AI Studio](https://aistudio.google.com/apikey). Leave unset and
   that toggle simply does nothing.
+- `AUTHOR_URL` — optional, adds a small second link next to "Powered by
+  Cuarto Oscuro" in the footer, pointing here (domain as label). Unset by
+  default, no personal link.
 
 Set up the database:
 
