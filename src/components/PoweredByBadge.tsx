@@ -6,7 +6,7 @@
 // interfaz (lightbox, modo presentación, etc. usan z-40/z-50).
 export function PoweredByBadge() {
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-1.5 z-20 flex justify-center">
+    <div className="pointer-events-none fixed inset-x-0 bottom-1.5 z-20 flex items-center justify-center gap-1.5">
       <a
         href="https://github.com/tronarite/cuarto-oscuro"
         target="_blank"
@@ -14,6 +14,13 @@ export function PoweredByBadge() {
         className="pointer-events-auto px-2 py-1 text-[9px] tracking-wide text-muted-foreground/30 transition-colors hover:text-muted-foreground/70"
       >
         Powered by Cuarto Oscuro
+      </a>
+      <span className="text-[9px] text-muted-foreground/20">·</span>
+      <a
+        href="https://tronarite.net/"
+        className="pointer-events-auto px-2 py-1 text-[9px] tracking-wide text-muted-foreground/30 transition-colors hover:text-muted-foreground/70"
+      >
+        tronarite.net
       </a>
     </div>
   );

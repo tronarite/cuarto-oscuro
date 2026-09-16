@@ -60,6 +60,7 @@ export async function generateMetadata({
     title: gallery.title,
     description,
     metadataBase: new URL(await resolveSiteUrl()),
+    alternates: { canonical: `/galeria/${slug}` },
     openGraph: {
       title: gallery.title,
       description,

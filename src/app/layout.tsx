@@ -43,6 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: truncateForMeta(
       settings.siteSubtitle || "Galería fotográfica personal",
     ),
+    alternates: { canonical: "/" },
   };
 }
 

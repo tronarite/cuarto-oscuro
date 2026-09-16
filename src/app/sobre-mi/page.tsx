@@ -1,9 +1,18 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSettings } from "@/lib/settings";
 import { isAdminAuthed } from "@/lib/admin-auth";
+import { resolveSiteUrl } from "@/lib/site-url";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { BackHomeLink } from "@/components/BackHomeLink";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    metadataBase: new URL(await resolveSiteUrl()),
+    alternates: { canonical: "/sobre-mi" },
+  };
+}
 
 export default async function AboutPage() {
   const [settings, admin] = await Promise.all([getSettings(), isAdminAuthed()]);
