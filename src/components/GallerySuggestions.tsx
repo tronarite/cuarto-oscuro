@@ -18,7 +18,7 @@ export function GallerySuggestions({
     // Mismo ancho que la cuadrícula de fotos (GalleryView.tsx), no el más
     // estrecho de la cabecera/título: si no, los bordes de esta sección
     // quedan más adentro que los de la propia galería justo encima.
-    <div className="mx-auto max-w-[1180px] px-6 pb-24 3xl:max-w-[1500px] 4xl:max-w-[1850px] 5xl:max-w-[2200px]">
+    <div className="mx-auto max-w-[clamp(1180px,72vw,2400px)] px-6 pb-24">
       <h2 className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
         {heading}
       </h2>
