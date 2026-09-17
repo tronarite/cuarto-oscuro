@@ -147,15 +147,13 @@ export default async function Home() {
         </ul>
       </div>
 
-      <div className="hidden flex-1 justify-center overflow-hidden lg:flex">
-        {/* Ancho fluido en vez de saltos por breakpoint: crece de forma
-            continua con el ancho real de la ventana (58% de esta),
-            entre un suelo igual al de antes (896px, portátiles/monitores
-            normales no cambian) y un techo generoso para pantallas
-            enormes (TVs) — así no depende de adivinar un punto de corte
-            exacto que puede no coincidir con lo que reporte el navegador
-            en cada pantalla. */}
-        <div className="h-full w-full max-w-[clamp(56rem,58vw,150rem)] px-6">
+      <div className="hidden flex-1 overflow-hidden lg:flex">
+        {/* Sin tope: este contenedor ya está acotado por el flex-1 de
+            arriba (todo lo que sobra tras la barra lateral fija), así
+            que w-full basta para que ocupe siempre el 100% real de ese
+            hueco, sea cual sea el ancho de la ventana — nada que
+            calcular ni ningún punto de corte que adivinar. */}
+        <div className="h-full w-full px-6">
           <FeaturedRail
             photos={railPhotos}
             orientation="vertical"

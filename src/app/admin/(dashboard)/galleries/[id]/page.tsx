@@ -115,7 +115,7 @@ export default async function EditGalleryPage({
             en pantallas anchas este contenedor (sin sidebar restando
             ancho) queda más ancho que lo que ve cualquier visitante, y
             la cuadrícula no coincide con la real. */}
-        <div className="mx-auto max-w-[clamp(1180px,72vw,2400px)]">
+        <div className="mx-auto max-w-[clamp(1180px,92vw,3200px)]">
           <PhotoManagerList
             photos={gallery.photos}
             layout={gallery.layout}
