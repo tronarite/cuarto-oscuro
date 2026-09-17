@@ -79,13 +79,13 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
-      <div className="flex w-full shrink-0 flex-col border-border px-6 pt-10 pb-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10 lg:pb-0">
+      <div className="flex w-full shrink-0 flex-col border-border px-6 pt-10 pb-16 lg:h-full lg:w-[26rem] lg:border-r lg:px-10 lg:pb-0 3xl:w-[30rem] 5xl:w-[36rem]">
         <div className="lg:shrink-0">
           <Link href="/" className="inline-block transition-transform duration-300 ease-out hover:scale-110">
             <FlowerMark className="h-9 w-9" />
           </Link>
           <div className="mt-3 flex items-start justify-between gap-4">
-            <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-4xl 4xl:text-5xl">
               {settings.siteTitle}
             </h1>
             <ThemeToggle className="mt-1 shrink-0" />
@@ -148,7 +148,7 @@ export default async function Home() {
       </div>
 
       <div className="hidden flex-1 justify-center overflow-hidden lg:flex">
-        <div className="h-full w-full max-w-4xl px-6">
+        <div className="h-full w-full max-w-4xl px-6 3xl:max-w-[1200px] 4xl:max-w-[1500px] 5xl:max-w-[1900px]">
           <FeaturedRail
             photos={railPhotos}
             orientation="vertical"

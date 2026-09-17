@@ -119,13 +119,13 @@ export default async function GalleryPage({
       )}
 
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 3xl:max-w-[1400px] 4xl:max-w-[1700px] 5xl:max-w-[2000px]">
           <BackHomeLink siteTitle={settings.siteTitle} />
           <ThemeToggle />
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-6 pb-10 pt-16 sm:pb-14 sm:pt-20">
+      <div className="mx-auto max-w-5xl px-6 pb-10 pt-16 sm:pb-14 sm:pt-20 3xl:max-w-[1400px] 4xl:max-w-[1700px] 5xl:max-w-[2000px]">
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
           {gallery.title}
         </h1>

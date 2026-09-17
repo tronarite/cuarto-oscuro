@@ -81,6 +81,16 @@
      con carácter, en contraste con Geist en el resto del texto.
      Utilidad: font-display. */
   --font-display: var(--font-fraunces);
+
+  /* Puntos de corte extra por encima del `2xl` de Tailwind (1536px):
+     monitores muy anchos y sobre todo TVs — un navegador en una tele 4K
+     conectada por HDMI suele reportar un viewport real de ~2560-3840px
+     de ancho (sin el escalado de un móvil/tablet), y sin esto el ancho
+     máximo de la cuadrícula de fotos y del raíl de portada se queda
+     fijo mucho antes de llenar la pantalla. */
+  --breakpoint-3xl: 120rem; /* 1920px */
+  --breakpoint-4xl: 160rem; /* 2560px */
+  --breakpoint-5xl: 240rem; /* 3840px */
 }
 
 @media (prefers-color-scheme: dark) {

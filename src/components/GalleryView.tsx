@@ -331,7 +331,7 @@ export function GalleryView({
   return (
     <>
       {photos.length > 0 && (
-        <div className="mx-auto mb-6 hidden max-w-[1180px] justify-end sm:flex">
+        <div className="mx-auto mb-6 hidden max-w-[1180px] justify-end sm:flex 3xl:max-w-[1500px] 4xl:max-w-[1850px] 5xl:max-w-[2200px]">
           <button
             type="button"
             onClick={() => setPresenting(true)}
@@ -342,7 +342,7 @@ export function GalleryView({
         </div>
       )}
 
-      <div className="mx-auto max-w-[1180px]">
+      <div className="mx-auto max-w-[1180px] 3xl:max-w-[1500px] 4xl:max-w-[1850px] 5xl:max-w-[2200px]">
         <MasonryGrid
           items={ordered.slice(0, visibleCount)}
           renderItem={(photo) => (
