@@ -148,7 +148,13 @@ export default async function Home() {
       </div>
 
       <div className="hidden flex-1 justify-center overflow-hidden lg:flex">
-        <div className="h-full w-full max-w-4xl px-6 3xl:max-w-[1200px] 4xl:max-w-[1500px] 5xl:max-w-[1900px]">
+        {/* Sin tope grande el raíl se queda pegado a max-w-4xl (896px) en
+            cualquier pantalla, por ancha que sea: el hueco sobrante entre
+            la barra lateral y el raíl no lo llena nadie. El tope aquí es
+            solo para que una pantalla descomunal no deje una sola foto
+            absurdamente ancha — en cualquier monitor u TV normal, el
+            raíl termina ocupando todo el espacio disponible. */}
+        <div className="h-full w-full max-w-[2400px] px-6">
           <FeaturedRail
             photos={railPhotos}
             orientation="vertical"
