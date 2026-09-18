@@ -147,13 +147,8 @@ export default async function Home() {
         </ul>
       </div>
 
-      <div className="hidden flex-1 overflow-hidden lg:flex">
-        {/* Sin tope: este contenedor ya está acotado por el flex-1 de
-            arriba (todo lo que sobra tras la barra lateral fija), así
-            que w-full basta para que ocupe siempre el 100% real de ese
-            hueco, sea cual sea el ancho de la ventana — nada que
-            calcular ni ningún punto de corte que adivinar. */}
-        <div className="h-full w-full px-6">
+      <div className="hidden flex-1 justify-center overflow-hidden lg:flex">
+        <div className="h-full w-full max-w-[clamp(56rem,58vw,150rem)] px-6">
           <FeaturedRail
             photos={railPhotos}
             orientation="vertical"
