@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { getSettings } from "@/lib/settings";
 import { truncateForMeta } from "@/lib/text";
 import { PoweredByBadge } from "@/components/PoweredByBadge";
+import { UnderConstructionBanner } from "@/components/UnderConstructionBanner";
 import { ToastProvider } from "@/components/ToastProvider";
 import "./globals.css";
 
@@ -72,6 +73,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col">
         <ToastProvider>
+          <UnderConstructionBanner />
           {children}
           <PoweredByBadge />
         </ToastProvider>
